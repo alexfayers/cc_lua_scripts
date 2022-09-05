@@ -121,6 +121,8 @@ end
 function getStorageItemCount(search_term)
     local item_count = 0
 
+    item_table = {}
+
     for i = 1, #chests do
         -- get the current chest
         local current_chest = peripheral.wrap(chests[i])
@@ -131,11 +133,17 @@ function getStorageItemCount(search_term)
             -- check if the item contains the search term
             if string.find(current_item.name, search_term) then
                 item_count = item_count + current_item.count
+                if item_table[current_item.name] == nil then
+                    item_table[current_item.name] = current_item.count
+                else
+                    item_table[current_item.name] = item_table[current_item.name] + current_item.count
+                end
             end
         end
     end
 
-    print("Found " .. item_count .. " items matching the search '" .. search_term .. "'")
+    print("Found " .. item_count .. " items matching the search '" .. search_term .. "':")
+    pretty.print(pretty.pretty(item_table))
 
     return item_count
 end
