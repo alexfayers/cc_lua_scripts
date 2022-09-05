@@ -189,7 +189,7 @@ end
 
 function publicPullFromStorage(search_term, search_requested_count)
     local item_count = getStorageItemCount(search_term)
-    if type(value) == "string" and search_requested_count == "all" then
+    if type(search_requested_count) == "string" and search_requested_count == "all" then
         search_requested_count = item_count
     end
     if item_count >= search_requested_count then
