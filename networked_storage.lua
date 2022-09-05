@@ -1,10 +1,8 @@
 local pretty = require("cc.pretty")
 
 
-local main_chest_in_name = "minecraft:chest_15"
-local main_chest_out_name = "minecraft:chest_14"
-local search_term = "dirt"
-local search_requested_count = 64
+local main_chest_in_name = "minecraft:chest_0"
+local main_chest_out_name = "minecraft:chest_1"
 
 -- get the main chest
 
