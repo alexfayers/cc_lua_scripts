@@ -142,8 +142,8 @@ function getStorageItemCount(search_term)
         end
     end
 
-    print("Found " .. item_count .. " items matching the search '" .. search_term .. "':")
     pretty.print(pretty.pretty(item_table))
+    print("Found " .. item_count .. " items matching the search '" .. search_term .. "'")
 
     return item_count
 end
