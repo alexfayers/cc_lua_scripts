@@ -181,7 +181,10 @@ end
 
 function publicPullFromStorage(search_term, search_requested_count)
     local item_count = getStorageItemCount(search_term)
-    if item_count == "all" or item_count >= search_requested_count then
+    if search_requested_count == "all" then
+        search_requested_count = item_count
+    end
+    if item_count >= search_requested_count then
         print("Pulling " .. search_requested_count .. " out of " .. item_count .. " '".. search_term .."' from storage")
         pullItemsFromStorage(search_term, search_requested_count)
     else
