@@ -218,7 +218,7 @@ if #arg > 0 then
         end
 
         if #arg > 2 then
-            search_requested_count = tonumber(arg[3])
+            search_requested_count = arg[3]
         else
             print("Error: No requested count provided. Must be an integer or 'all'.")
             publicUsage()
