@@ -61,7 +61,7 @@ function pullItemsFromStorage(search_term, search_requested_count)
             -- check if the item contains the search term
             if string.find(current_item.name, search_term) then
                 -- check how many items we need to move
-                if search_requested_count == "all" then
+                if search_requested_count == "all" or search_requested_count == nil then
                     -- if we want to move all items, then we don't need to check how many items we need to move
                     moved_items = moved_items + current_chest.pushItems(main_chest_out_name, current_slot)
                 else
@@ -181,8 +181,10 @@ end
 
 function publicPullFromStorage(search_term, search_requested_count)
     local item_count = getStorageItemCount(search_term)
-    if search_requested_count == "all" then
+    if type(value) == "string" and search_requested_count == "all" then
         search_requested_count = item_count
+    else
+        search_requested_count = tonumber(search_requested_count)
     end
     if item_count >= search_requested_count then
         print("Pulling " .. search_requested_count .. " out of " .. item_count .. " '".. search_term .."' from storage")
