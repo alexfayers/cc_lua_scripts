@@ -11,7 +11,7 @@ local main_chest_out = peripheral.wrap(main_chest_out_name)
 
 -- get the modem
 
-local modem = peripheral.wrap("down")
+local modem = peripheral.find("modem")
 
 -- get all the chests on the modem
 
