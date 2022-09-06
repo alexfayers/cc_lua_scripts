@@ -2,7 +2,7 @@
 
 local wheat_slot = 1  -- slot of wheat in the turtle's inventory
 local sleep_time = 300  -- 5 minutes
-local breedCount = 10  -- number of times to attempt to breed each run
+local breedCount = 20  -- number of times to attempt to breed each run
 
 function log(msg)
     msg = os.date("%c") .. " " .. msg
