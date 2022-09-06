@@ -4,6 +4,14 @@ local wheat_slot = 1  -- slot of wheat in the turtle's inventory
 local sleep_time = 300  -- 5 minutes
 local breedCount = 10  -- number of times to attempt to breed each run
 
+function log(msg)
+    msg = os.date("%c") .. " " .. msg
+    print(msg)
+    local file = fs.open("breedbot.log", "a")
+    file.writeLine(msg)
+    file.close()
+end
+
 -- define functions
 
 function breedBelow()
@@ -12,7 +20,7 @@ function breedBelow()
     turtle.select(wheat_slot)
 
     for i = 1, breedCount do
-        print("Breeding animals ..." .. i)
+        log("Breeding animals ..." .. i)
 
         turtle.placeDown()
 
@@ -25,7 +33,7 @@ function main()
     while true do
         breedBelow()
 
-        print("Sleeping for " .. sleep_time .. " seconds before next breeding")
+        log("Sleeping for " .. sleep_time .. " seconds before next breeding")
         sleep(sleep_time)
     end
 end
