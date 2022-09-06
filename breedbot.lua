@@ -1,7 +1,8 @@
 -- define config
 
-local wheat_slot = 1
-local sleep_time = 300
+local wheat_slot = 1  -- slot of wheat in the turtle's inventory
+local sleep_time = 300  -- 5 minutes
+local breedCount = 10  -- number of times to breed each run
 
 -- define functions
 
@@ -10,7 +11,7 @@ function breedBelow()
     -- use the wheat to breed the animals 20 times
     turtle.select(wheat_slot)
 
-    for i = 1, 20 do
+    for i = 1, breedCount do
         print("Breeding animals ..." .. i)
 
         turtle.placeDown()
