@@ -18,6 +18,7 @@ local state = {
     direction = "north",
     fuel_level = 0,
     time_to_harvest = 0,
+    always_plant = true
 }
 
 function logTime()
@@ -242,8 +243,9 @@ function harvest()
 
     local success, data = turtle.inspectDown()
     if success and data.name == "minecraft:wheat" and data.state.age >= 7 then
-        turtle.digDown()
+        return turtle.digDown()
     end
+    return false
 end
 
 function plant()
@@ -255,8 +257,9 @@ function plant()
 end
 
 function harvestAndPlant()
-    harvest()
-    plant()
+    if state.always_plant == true or harvest() == true then
+        plant()
+    end
 end
 
 function deposit()
@@ -365,6 +368,11 @@ function main()
         refuel()
         farm()
         depositIfChest()
+
+        -- only always plant on the first run
+        if state.always_plant == true then
+            state.always_plant = false
+        end
 
         state.time_to_harvest = 600  -- wait 10 minutes before harvesting again
         saveState()
