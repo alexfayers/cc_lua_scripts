@@ -225,7 +225,7 @@ function harvest()
     -- check if the turtle is on top of a fully grown wheat
 
     local success, data = turtle.inspectDown()
-    if success and data.name == "minecraft:wheat" and data.state.age == "7" then
+    if success and data.name == "minecraft:wheat" and data.state.age >= 7 then
         turtle.digDown()
     end
 end
