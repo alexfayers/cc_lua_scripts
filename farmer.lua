@@ -9,6 +9,8 @@ local fuel_threshold = 100
 
 local max_seeds = farm_width * farm_height - 1  -- minus 1 for water slot
 
+local fuel_source = "minecraft:charcoal"
+
 local state = {
     position = {
         x = 0,
@@ -79,7 +81,7 @@ end
 function refuel()
     while turtle.getFuelLevel() < fuel_threshold do
         log("Refueling ...")
-        if selectFromInventory("minecraft:coal") > 0 then
+        if selectFromInventory(fuel_source) > 0 then
             turtle.refuel(1)
         else
             log("Ran out of fuel locally - trying chest!")  -- TODO: notify
@@ -292,10 +294,10 @@ end
 function pullFuelFromChest()
     local success, data = turtle.inspectDown()
     if success and data.name == "minecraft:chest" then
-        if checkItemFirstInChest("minecraft:coal") then
+        if checkItemFirstInChest(fuel_source) then
             turtle.suckDown()
         else
-            error("No coal found in chest")  -- TODO: notify
+            error("No fuel found in chest")  -- TODO: notify
         end
     end
 end
