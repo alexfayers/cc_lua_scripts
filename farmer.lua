@@ -261,15 +261,15 @@ function deposit()
         turtle.dropDown()
     end
 
-    while true do
-        local total_seed_count = inventoryCount("minecraft:wheat_seeds")
-        if total_seed_count > 80 then
-            log("got enough seeds - depositing extras")
-            local stack_seed_count = selectFromInventory("minecraft:wheat_seeds")
-            local extra_seed_count = total_seed_count - 80
-            local drop_count = math.min(extra_seed_count, stack_seed_count)
+    local total_seed_count = inventoryCount("minecraft:wheat_seeds")
+    while total_seed_count > 80 do
+        log("got enough seeds - depositing extras")
+        local stack_seed_count = selectFromInventory("minecraft:wheat_seeds")
+        local extra_seed_count = total_seed_count - 80
+        local drop_count = math.min(extra_seed_count, stack_seed_count)
 
-            turtle.dropDown(drop_count)
+        if turtle.dropDown(drop_count) then
+            total_seed_count = total_seed_count - drop_count
         end
     end
 end
