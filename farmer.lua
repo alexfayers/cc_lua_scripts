@@ -253,14 +253,18 @@ function farm()
             harvest()
             plant()
         end
-        if i % 2 == 0 then
-            turnLeft()
-            moveForward()
-            turnLeft()
+        if i ~= farm_width then
+            if i % 2 == 0 then
+                turnLeft()
+                moveForward()
+                turnLeft()
+            else
+                turnRight()
+                moveForward()
+                turnRight()
+            end
         else
-            turnRight()
-            moveForward()
-            turnRight()
+            moveForward()  -- is this right?
         end
         harvest()
         plant()
