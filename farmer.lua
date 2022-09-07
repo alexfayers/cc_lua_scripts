@@ -17,6 +17,10 @@ local state = {
     fuel_level = 0
 }
 
+function isoTime()
+    return os.date("%y-%m-%dT%H:%M:%SZ")
+end
+
 function saveState()
     local file = fs.open("state", "w")
     file.writeLine(textutils.serialize(state))
@@ -30,7 +34,15 @@ function loadState()
 end
 
 function log(msg)
-    msg = os.date("%c") .. " " .. msg
+    msg = isoTime() .. " I: " .. msg
+    print(msg)
+    local file = fs.open("farmer.log", "a")
+    file.writeLine(msg)
+    file.close()
+end
+
+function debugLog(msg)
+    msg = isoTime() .. " D: " .. msg
     print(msg)
     local file = fs.open("farmer.log", "a")
     file.writeLine(msg)
