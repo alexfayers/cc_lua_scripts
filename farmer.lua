@@ -158,21 +158,21 @@ function moveTo(x, y, z)
             if state.direction == "north" then
                 turnAround()
             elseif state.direction == "east" then
-                turnLeft()
+                turnRight()
             elseif state.direction == "south" then
                 -- do nothing
             elseif state.direction == "west" then
-                turnRight()
+                turnLeft()
             end
         elseif state.position.z > z then
             if state.direction == "north" then
                 -- do nothing
             elseif state.direction == "east" then
-                turnRight()
+                turnLeft()
             elseif state.direction == "south" then
                 turnAround()
             elseif state.direction == "west" then
-                turnLeft()
+                turnRight()
             end
         end
         moveForward()
