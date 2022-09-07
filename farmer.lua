@@ -257,7 +257,7 @@ function plant()
 end
 
 function harvestAndPlant()
-    if state.always_plant == true or harvest() == true then
+    if harvest() == true or state.always_plant == true then
         plant()
     end
 end
