@@ -17,6 +17,18 @@ local state = {
     fuel_level = 0
 }
 
+function saveState()
+    local file = fs.open("state", "w")
+    file.writeLine(textutils.serialize(state))
+    file.close()
+end
+
+function loadState()
+    local file = fs.open("state", "r")
+    state = textutils.unserialize(file.readAll())
+    file.close()
+end
+
 function log(msg)
     msg = os.date("%c") .. " " .. msg
     print(msg)
@@ -58,6 +70,8 @@ function turnLeft()
     elseif state.direction == "east" then
         state.direction = "north"
     end
+
+    saveState()
 end
 
 function turnRight()
@@ -71,6 +85,8 @@ function turnRight()
     elseif state.direction == "west" then
         state.direction = "north"
     end
+
+    saveState()
 end
 
 function turnAround()
@@ -90,32 +106,24 @@ function moveForward()
             state.position.x = state.position.x - 1
         end
     end
-end
 
-function moveBackward()
-    if turtle.back() then
-        if state.direction == "north" then
-            state.position.z = state.position.z + 1
-        elseif state.direction == "east" then
-            state.position.x = state.position.x - 1
-        elseif state.direction == "south" then
-            state.position.z = state.position.z - 1
-        elseif state.direction == "west" then
-            state.position.x = state.position.x + 1
-        end
-    end
+    saveState()
 end
 
 function moveUp()
     if turtle.up() then
         state.position.y = state.position.y + 1
     end
+
+    saveState()
 end
 
 function moveDown()
     if turtle.down() then
         state.position.y = state.position.y - 1
     end
+
+    saveState()
 end
 
 function moveTo(x, y, z)
@@ -177,7 +185,10 @@ function moveTo(x, y, z)
 end
 
 function harvest()
-    if turtle.detectDown() then
+    -- check if the turtle is on top of a fully grown wheat
+
+    local success, data = turtle.inspectDown()
+    if success and data.name == "minecraft:wheat" and data.state.age == "7" then
         turtle.digDown()
     end
 end
@@ -194,6 +205,7 @@ function farm()
     for i = 1, farm_width do
         for j = 1, farm_height do
             harvest()
+            plant()
             if i ~= farm_width or j ~= farm_height then
                 moveForward()
             end
@@ -209,14 +221,14 @@ function farm()
         end
     end
     moveTo(0, 0, 0)
-    for i = 1, farm_width * farm_height do
-        plant()
-        moveForward()
-    end
-    moveTo(0, 0, 0)
 end
 
 function main()
+    if fs.exists("state") then
+        loadState()
+    else
+        saveState()
+    end
     while true do
         refuel()
         farm()
@@ -224,4 +236,22 @@ function main()
     end
 end
 
-main()
+function test()
+    log("Testing ...")
+    log("Fuel level: " .. turtle.getFuelLevel())
+    log("Position: " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
+    log("Direction: " .. state.direction)
+    log("Fuel threshold: " .. fuel_threshold)
+    log("Farm width: " .. farm_width)
+    log("Farm height: " .. farm_height)
+    log("Tesing movement ...")
+    moveTo(2, 0, 0)
+    moveTo(0, 0, 0)
+    moveTo(0, 2, 0)
+    moveTo(0, 0, 0)
+    moveTo(0, 0, 2)
+    moveTo(0, 0, 0)
+    log("Testing done")
+end
+
+test()
