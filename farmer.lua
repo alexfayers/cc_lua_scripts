@@ -54,16 +54,28 @@ function selectFromInventory(item_name)
         turtle.select(i)
         local item = turtle.getItemDetail()
         if item ~= nil and item.name == item_name then
-            return true
+            return item.count
         end
     end
-    return false
+    return 0
+end
+
+function inventoryCount(item_name)
+    local count = 0
+    for i = 1, 16 do
+        turtle.select(i)
+        local item = turtle.getItemDetail()
+        if item ~= nil and item.name == item_name then
+            count = count + item.count
+        end
+    end
+    return count
 end
 
 function refuel()
     while turtle.getFuelLevel() < fuel_threshold do
         log("Refueling ...")
-        if selectFromInventory("minecraft:coal") then
+        if selectFromInventory("minecraft:coal") > 0 then
             turtle.refuel(1)
         else
             log("Ran out of fuel locally - trying chest!")  -- TODO: notify
@@ -232,7 +244,7 @@ function harvest()
 end
 
 function plant()
-    if selectFromInventory("minecraft:wheat_seeds") then
+    if selectFromInventory("minecraft:wheat_seeds") > 0 then
         turtle.placeDown()
     else
         log("No wheat seeds found in inventory")  -- TODO: notify
@@ -245,8 +257,20 @@ function harvestAndPlant()
 end
 
 function deposit()
-    if selectFromInventory("minecraft:wheat") then
+    while selectFromInventory("minecraft:wheat") > 0 do
         turtle.dropDown()
+    end
+
+    while true do
+        local total_seed_count = inventoryCount("minecraft:wheat_seeds")
+        if total_seed_count > 80 then
+            log("got enough seeds - depositing extras")
+            local stack_seed_count = selectFromInventory("minecraft:wheat_seeds")
+            local extra_seed_count = total_seed_count - 80
+            local drop_count = math.min(extra_seed_count, stack_seed_count)
+
+            turtle.dropDown(drop_count)
+        end
     end
 end
 
@@ -365,4 +389,4 @@ function test()
     log("Testing done")
 end
 
-main()
+depositIfChest()
