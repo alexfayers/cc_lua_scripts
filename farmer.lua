@@ -7,6 +7,8 @@ local farm_height = 9
 
 local fuel_threshold = 100
 
+local max_seeds = farm_width * farm_height - 1  -- minus 1 for water slot
+
 local state = {
     position = {
         x = 0,
@@ -257,15 +259,17 @@ function harvestAndPlant()
 end
 
 function deposit()
+    log("Depositing wheat ...")
     while selectFromInventory("minecraft:wheat") > 0 do
         turtle.dropDown()
     end
 
+    log("Depositing seeds ...")
     local total_seed_count = inventoryCount("minecraft:wheat_seeds")
-    while total_seed_count > 80 do
+    while total_seed_count > max_seeds do
         log("got enough seeds - depositing extras")
         local stack_seed_count = selectFromInventory("minecraft:wheat_seeds")
-        local extra_seed_count = total_seed_count - 80
+        local extra_seed_count = total_seed_count - max_seeds
         local drop_count = math.min(extra_seed_count, stack_seed_count)
 
         if turtle.dropDown(drop_count) then
@@ -389,4 +393,4 @@ function test()
     log("Testing done")
 end
 
-depositIfChest()
+main()
