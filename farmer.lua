@@ -97,11 +97,11 @@ end
 function moveForward()
     if turtle.forward() then
         if state.direction == "north" then
-            state.position.z = state.position.z + 1
+            state.position.z = state.position.z - 1
         elseif state.direction == "east" then
             state.position.x = state.position.x + 1
         elseif state.direction == "south" then
-            state.position.z = state.position.z - 1
+            state.position.z = state.position.z + 1
         elseif state.direction == "west" then
             state.position.x = state.position.x - 1
         end
@@ -156,21 +156,21 @@ function moveTo(x, y, z)
     while state.position.z ~= z do
         if state.position.z < z then
             if state.direction == "north" then
-                -- do nothing
+                turnAround()
             elseif state.direction == "east" then
                 turnLeft()
             elseif state.direction == "south" then
-                turnAround()
+                -- do nothing
             elseif state.direction == "west" then
                 turnRight()
             end
         else
             if state.direction == "north" then
-                turnAround()
+                -- do nothing
             elseif state.direction == "east" then
                 turnRight()
             elseif state.direction == "south" then
-                -- do nothing
+                turnAround()
             elseif state.direction == "west" then
                 turnLeft()
             end
