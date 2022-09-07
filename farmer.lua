@@ -49,12 +49,12 @@ function selectFromInventory(item_name)
 end
 
 function refuel()
-    if turtle.getFuelLevel() < fuel_threshold then
+    while turtle.getFuelLevel() < fuel_threshold do
         log("Refueling ...")
         if selectFromInventory("minecraft:coal") then
             turtle.refuel(1)
         else
-            log("No coal found in inventory")
+            error("Ran out of fuel!")  -- TODO: notify
         end
     end
 end
@@ -95,7 +95,8 @@ function turnAround()
 end
 
 function moveForward()
-    if turtle.forward() then
+    local success = turtle.forward()
+    if success then
         if state.direction == "north" then
             state.position.z = state.position.z - 1
         elseif state.direction == "east" then
@@ -105,27 +106,32 @@ function moveForward()
         elseif state.direction == "west" then
             state.position.x = state.position.x - 1
         end
+        saveState()
     end
 
     log("Moved to " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
 
-    saveState()
+    return success
 end
 
 function moveUp()
-    if turtle.up() then
+    local success = turtle.up()
+    if success then
         state.position.y = state.position.y + 1
+        saveState()
     end
 
-    saveState()
+    return success
 end
 
 function moveDown()
-    if turtle.down() then
+    local success = turtle.down()
+    if success then
         state.position.y = state.position.y - 1
+        saveState()
     end
 
-    saveState()
+    return success
 end
 
 function moveTo(x, y, z)
@@ -151,7 +157,10 @@ function moveTo(x, y, z)
                 -- do nothing
             end
         end
-        moveForward()
+        if moveForward() == false then
+            -- TODO: move around?
+            error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
+        end
     end
     while state.position.z ~= z do
         if state.position.z < z then
@@ -175,13 +184,19 @@ function moveTo(x, y, z)
                 turnRight()
             end
         end
-        moveForward()
+        if moveForward() == false then
+            error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
+        end
     end
     while state.position.y ~= y do
         if state.position.y < y then
-            moveUp()
+            if moveUp() == false then
+                error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
+            end
         elseif state.position.y > y then
-            moveDown()
+            if moveDown() == false then
+                error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
+            end
         end
     end
 end
