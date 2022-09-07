@@ -352,13 +352,6 @@ function main()
         saveState()
     end
     while true do
-        refuel()
-        farm()
-        depositIfChest()
-
-        state.time_to_harvest = 600  -- wait 10 minutes before harvesting again
-        saveState()
-
         while state.time_to_harvest > 0 do
             if state.time_to_harvest % 60 == 0 then
                 log("Waiting " .. state.time_to_harvest .. " seconds before harvesting again")
@@ -367,8 +360,14 @@ function main()
             sleep(1)
             state.time_to_harvest = state.time_to_harvest - 1
             saveState()
-
         end
+
+        refuel()
+        farm()
+        depositIfChest()
+
+        state.time_to_harvest = 600  -- wait 10 minutes before harvesting again
+        saveState()
     end
 end
 
