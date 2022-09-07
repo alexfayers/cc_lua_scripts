@@ -266,6 +266,12 @@ function main()
 end
 
 function test()
+    if fs.exists("state") then
+        loadState()
+    else
+        saveState()
+    end
+
     log("Testing ...")
     log("Fuel level: " .. turtle.getFuelLevel())
     log("Position: " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
