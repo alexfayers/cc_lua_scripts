@@ -242,10 +242,12 @@ function farm()
     moveTo(0, 0, 0)
     faceDirection("north")
 
+    moveForward()
+
     -- start farming
     for i = 1, farm_width do
-        for j = 1, farm_height do
-            if i ~= farm_width or j ~= farm_height then
+        for j = 1, (farm_height - 1) do
+            if i ~= farm_width or j ~= (farm_height - 1) then
                 moveForward()
             end
             harvest()
