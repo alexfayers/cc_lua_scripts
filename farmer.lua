@@ -300,4 +300,4 @@ function test()
     log("Testing done")
 end
 
-test()
+main()
