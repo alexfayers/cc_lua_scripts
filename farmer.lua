@@ -16,7 +16,8 @@ local state = {
         z = 0,
     },
     direction = "north",
-    fuel_level = 0
+    fuel_level = 0,
+    time_to_harvest = 0,
 }
 
 function logTime()
@@ -354,7 +355,20 @@ function main()
         refuel()
         farm()
         depositIfChest()
-        sleep(60)
+
+        state.time_to_harvest = 600  -- wait 10 minutes before harvesting again
+        saveState()
+
+        while state.time_to_harvest > 0 do
+            if state.time_to_harvest % 60 == 0 then
+                log("Waiting " .. state.time_to_harvest .. " seconds before harvesting again")
+            end
+
+            sleep(1)
+            state.time_to_harvest = state.time_to_harvest - 1
+            saveState()
+
+        end
     end
 end
 
