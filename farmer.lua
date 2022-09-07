@@ -253,6 +253,14 @@ function test()
     moveTo(0, 0, 0)
     moveTo(0, 0, 2)
     moveTo(0, 0, 0)
+
+    moveTo(-2, 0, 0)
+    moveTo(0, 0, 0)
+    moveTo(0, -2, 0)
+    moveTo(0, 0, 0)
+    moveTo(0, 0, -2)
+    moveTo(0, 0, 0)
+
     log("Position: " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
 
     -- moveTo(0, 0, 0)
