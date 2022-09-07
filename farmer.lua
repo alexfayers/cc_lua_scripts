@@ -66,7 +66,8 @@ function refuel()
         if selectFromInventory("minecraft:coal") then
             turtle.refuel(1)
         else
-            error("Ran out of fuel!")  -- TODO: notify
+            log("Ran out of fuel locally - trying chest!")  -- TODO: notify
+            pullFuelFromChest()
         end
     end
 end
@@ -238,20 +239,63 @@ function plant()
     end
 end
 
+function harvestAndPlant()
+    harvest()
+    plant()
+end
+
+function deposit()
+    if selectFromInventory("minecraft:wheat") then
+        turtle.dropDown()
+    end
+end
+
+function depositIfChest()
+    local success, data = turtle.inspectDown()
+    if success and data.name == "minecraft:chest" then
+        deposit()
+    end
+end
+
+function pullFuelFromChest()
+    local success, data = turtle.inspectDown()
+    if success and data.name == "minecraft:chest" then
+        if checkItemFirstInChest("minecraft:coal") then
+            turtle.suckDown()
+        else
+            error("No coal found in chest")  -- TODO: notify
+        end
+    end
+end
+
+function checkItemFirstInChest(searchItem)
+    local chest = peripheral.wrap("bottom")
+
+    for i = 1, chest.size() do
+        local item = chest.getItemDetail(i)
+        if item ~= nil and item.name == searchItem then
+            return true
+        end
+    end
+
+    return false
+end
+
 function farm()
     moveTo(0, 0, 0)
     faceDirection("north")
 
+    -- do the first plant
     moveForward()
+    harvestAndPlant()
 
-    -- start farming
+    -- do the whole farm
     for i = 1, farm_width do
         for j = 1, (farm_height - 1) do
             if i ~= farm_width or j ~= (farm_height - 1) then
                 moveForward()
             end
-            harvest()
-            plant()
+            harvestAndPlant()
         end
         if i ~= farm_width then
             if i % 2 == 0 then
@@ -266,8 +310,7 @@ function farm()
         else
             moveForward()  -- is this right?
         end
-        harvest()
-        plant()
+        harvestAndPlant()
     end
     moveTo(0, 0, 0)
     faceDirection("north")
@@ -282,6 +325,7 @@ function main()
     while true do
         refuel()
         farm()
+        depositIfChest()
         sleep(60)
     end
 end
