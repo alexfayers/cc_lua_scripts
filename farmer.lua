@@ -243,11 +243,11 @@ function farm()
     faceDirection("north")
     for i = 1, (farm_width - 1) do
         for j = 1, (farm_height - 1) do
-            harvest()
-            plant()
             if i ~= farm_width or j ~= farm_height then
                 moveForward()
             end
+            harvest()
+            plant()
         end
         if i % 2 == 0 then
             turnLeft()
@@ -258,6 +258,8 @@ function farm()
             moveForward()
             turnRight()
         end
+        harvest()
+        plant()
     end
     moveTo(0, 0, 0)
     faceDirection("north")
