@@ -107,6 +107,8 @@ function moveForward()
         end
     end
 
+    log("Moved to " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
+
     saveState()
 end
 
