@@ -226,7 +226,7 @@ function plant()
     if selectFromInventory("minecraft:wheat_seeds") then
         turtle.placeDown()
     else
-        log("No wheat seeds found in inventory")
+        log("No wheat seeds found in inventory")  -- TODO: notify
     end
 end
 
