@@ -231,8 +231,8 @@ function plant()
 end
 
 function farm()
-    for i = 1, farm_width do
-        for j = 1, farm_height do
+    for i = 1, (farm_width - 1) do
+        for j = 1, (farm_height - 1) do
             harvest()
             plant()
             if i ~= farm_width or j ~= farm_height then
