@@ -376,7 +376,7 @@ function main()
             state.always_plant = false
         end
 
-        state.time_to_harvest = 600  -- wait 10 minutes before harvesting again
+        state.time_to_harvest = 1200  -- wait 20 minutes before harvesting again
         saveState()
     end
 end
