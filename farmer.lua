@@ -146,28 +146,52 @@ function moveDown()
     return success
 end
 
+function faceDirection(direction)
+    if state.direction == direction then
+        return
+    end
+
+    if state.direction == "north" then
+        if direction == "east" then
+            turnRight()
+        elseif direction == "south" then
+            turnAround()
+        elseif direction == "west" then
+            turnLeft()
+        end
+    elseif state.direction == "east" then
+        if direction == "south" then
+            turnRight()
+        elseif direction == "west" then
+            turnAround()
+        elseif direction == "north" then
+            turnLeft()
+        end
+    elseif state.direction == "south" then
+        if direction == "west" then
+            turnRight()
+        elseif direction == "north" then
+            turnAround()
+        elseif direction == "east" then
+            turnLeft()
+        end
+    elseif state.direction == "west" then
+        if direction == "north" then
+            turnRight()
+        elseif direction == "east" then
+            turnAround()
+        elseif direction == "south" then
+            turnLeft()
+        end
+    end
+end
+
 function moveTo(x, y, z)
     while state.position.x ~= x do
         if state.position.x < x then
-            if state.direction == "north" then
-                turnRight()
-            elseif state.direction == "east" then
-                -- do nothing
-            elseif state.direction == "south" then
-                turnLeft()
-            elseif state.direction == "west" then
-                turnAround()
-            end
+            faceDirection("east")
         elseif state.position.x > x then
-            if state.direction == "north" then
-                turnLeft()
-            elseif state.direction == "east" then
-                turnAround()
-            elseif state.direction == "south" then
-                turnRight()
-            elseif state.direction == "west" then
-                -- do nothing
-            end
+            faceDirection("west")
         end
         if moveForward() == false then
             -- TODO: move around?
@@ -176,25 +200,9 @@ function moveTo(x, y, z)
     end
     while state.position.z ~= z do
         if state.position.z < z then
-            if state.direction == "north" then
-                turnAround()
-            elseif state.direction == "east" then
-                turnRight()
-            elseif state.direction == "south" then
-                -- do nothing
-            elseif state.direction == "west" then
-                turnLeft()
-            end
+            faceDirection("south")
         elseif state.position.z > z then
-            if state.direction == "north" then
-                -- do nothing
-            elseif state.direction == "east" then
-                turnLeft()
-            elseif state.direction == "south" then
-                turnAround()
-            elseif state.direction == "west" then
-                turnRight()
-            end
+            faceDirection("north")
         end
         if moveForward() == false then
             error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
@@ -231,6 +239,8 @@ function plant()
 end
 
 function farm()
+    moveTo(0, 0, 0)
+    faceDirection("north")
     for i = 1, (farm_width - 1) do
         for j = 1, (farm_height - 1) do
             harvest()
@@ -250,6 +260,7 @@ function farm()
         end
     end
     moveTo(0, 0, 0)
+    faceDirection("north")
 end
 
 function main()
