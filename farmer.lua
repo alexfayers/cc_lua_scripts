@@ -140,7 +140,7 @@ function moveTo(x, y, z)
             elseif state.direction == "west" then
                 turnAround()
             end
-        else
+        elseif state.position.x > x then
             if state.direction == "north" then
                 turnLeft()
             elseif state.direction == "east" then
@@ -164,7 +164,7 @@ function moveTo(x, y, z)
             elseif state.direction == "west" then
                 turnRight()
             end
-        else
+        elseif state.position.z > z then
             if state.direction == "north" then
                 -- do nothing
             elseif state.direction == "east" then
@@ -180,7 +180,7 @@ function moveTo(x, y, z)
     while state.position.y ~= y do
         if state.position.y < y then
             moveUp()
-        else
+        elseif state.position.y > y then
             moveDown()
         end
     end
@@ -253,7 +253,6 @@ function test()
     moveTo(0, 0, 0)
     moveTo(0, 0, 2)
     moveTo(0, 0, 0)
-    turnAround()
     log("Position: " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
 
     -- moveTo(0, 0, 0)
