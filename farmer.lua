@@ -154,7 +154,7 @@ function moveTo(x, y, z)
         moveForward()
     end
     while state.position.z ~= z do
-        if state.position.z < z then
+        if state.position.z > z then
             if state.direction == "north" then
                 -- do nothing
             elseif state.direction == "east" then
