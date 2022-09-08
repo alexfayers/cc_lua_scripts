@@ -1,6 +1,6 @@
 -- define config
 
-local wheat_slot = 1  -- slot of wheat in the turtle's inventory
+local breeding_item = "minecraft:wheat"  -- item to use for breeding
 local sleep_time = 300  -- 5 minutes
 local breedCount = 48  -- number of times to attempt to breed each run
 
@@ -14,10 +14,22 @@ end
 
 -- define functions
 
+function selectFromInventory(item_name)
+    for i = 1, 16 do
+        turtle.select(i)
+        local item = turtle.getItemDetail()
+        if item ~= nil and item.name == item_name then
+            return item.count
+        end
+    end
+    return 0
+end
+
+
 function breedBelow()
 
     -- use the wheat to breed the animals 20 times
-    turtle.select(wheat_slot)
+    selectFromInventory(breeding_item)
 
     for i = 1, breedCount do
         log("Breeding animals ..." .. i)
