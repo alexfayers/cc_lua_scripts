@@ -300,6 +300,7 @@ if #arg > 0 then
         else
             print("Error: No search term provided.")
             publicUsage()
+            return
         end
 
         if #arg > 2 then
@@ -308,6 +309,7 @@ if #arg > 0 then
             print("Error: No requested count provided. Must be an integer or 'all'.")
             publicUsage()
             getStorageItemCount(search_term)
+            return
         end
 
         publicPullFromStorage(search_term, search_requested_count)
@@ -317,19 +319,23 @@ if #arg > 0 then
         else
             print("Error: No search term provided.")
             publicUsage()
+            return
         end
 
         getStorageItemCount(search_term)
+        do_inventory_save = false
     elseif arg[1] == "inventory" then
         fullInventoryCheck()
         do_inventory_save = false
     else
         print("Error: Unknown command '" .. arg[1] .. "'.")
         publicUsage()
+        return
     end
 else
     print("Error: No command provided.")
     publicUsage()
+    return
 end
 
 if do_inventory_save == true then
