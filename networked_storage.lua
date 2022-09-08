@@ -148,8 +148,7 @@ function getStorageItemCount(search_term)
     return item_count
 end
 
-function fullInventoryCheck()
-    -- Dump all items within storage to a file
+function getInventory()
     item_table = {}
 
     for i = 1, #chests do
@@ -170,13 +169,54 @@ function fullInventoryCheck()
         end
     end
 
+    return item_table
+end
+
+function getInventoryFromFile()
+    local file = fs.open("_storage_completion.txt", "r")
+    if file == nil then
+        return {}
+    end
+    local inventory = textutils.unserialize(file.readAll())
+    file.close()
+    return inventory
+end
+
+function saveInventoryToCompletionFile(item_table)
+    if item_table == nil then
+        item_table = getInventory()
+    end
+
+    -- write the pure item table to a file for auto completion
+    local file = fs.open("_storage_completion.txt", "w")
+    local clean_table = {}
+    for k, v in pairs(item_table) do
+        local c = 0
+        for match in string.gmatch(k, '([^:]+)') do
+            if c == 1 then
+                clean_table[match] = v
+            end
+            c = c + 1
+        end
+    end
+    file.write(textutils.serialize(clean_table))
+    file.close()
+end
+
+
+function fullInventoryCheck()
+    -- Dump all items within storage to a file
+    item_table = getInventory()
+
     -- print the table
     pretty.print(pretty.pretty(item_table))
 
     -- write the table to a file
-    local file = fs.open("storage_inventory.txt", "w")
+    local file = fs.open("inventory.txt", "w")
     file.write(pretty.render(pretty.pretty(item_table), 20))
     file.close()
+
+    saveInventoryToCompletionFile(item_table)
 
     print("Storage inventory written to storage_inventory.txt")
 end
@@ -215,7 +255,41 @@ function publicUsage()
     print("    " .. script_name .. " inventory")
 end
 
+-- handle autocompletion
+local completion = require "cc.completion"
+
+function complete(shell, index, argument, previous)
+    if index == 1 then
+        return completion.choice(argument, {"pull", "push", "count", "inventory"}, true)
+    elseif index == 2 then
+        if previous[#previous] == "pull" then
+            local inventory_names = {}
+            for key,_ in pairs(getInventoryFromFile()) do
+                table.insert(inventory_names, key)
+            end
+            return completion.choice(argument, inventory_names, false)
+        elseif previous[#previous] == "count" then
+            local inventory_names = {}
+            for key,_ in pairs(getInventoryFromFile()) do
+                table.insert(inventory_names, key)
+            end
+
+            return completion.choice(argument, inventory_names, false)
+        end
+        
+    elseif index == 3 then
+        if previous[#previous - 1] == "pull" then
+            return completion.choice(argument, {"all"}, false)
+        end
+    end
+end
+
+shell.setCompletionFunction("storage", complete)
+
+
 -- handle commandline arguments
+
+local do_inventory_save = true
 
 if #arg > 0 then
     if arg[1] == "push" then
@@ -250,6 +324,7 @@ if #arg > 0 then
         getStorageItemCount(search_term)
     elseif arg[1] == "inventory" then
         fullInventoryCheck()
+        do_inventory_save = false
     else
         print("Error: Unknown command '" .. arg[1] .. "'.")
         publicUsage()
@@ -259,4 +334,8 @@ else
     print("Error: No command provided.")
     publicUsage()
     return
+end
+
+if do_inventory_save == true then
+    saveInventoryToCompletionFile()
 end
