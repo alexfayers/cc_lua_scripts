@@ -260,7 +260,7 @@ local completion = require "cc.completion"
 
 function complete(shell, index, argument, previous)
     if index == 1 then
-        return completion.choice(argument, {"pull", "push", "count", "inventory"}, true)
+        return completion.choice(argument, {"push", "pull", "count", "inventory"}, true)
     elseif index == 2 then
         if previous[#previous] == "pull" then
             local inventory_names = {}
