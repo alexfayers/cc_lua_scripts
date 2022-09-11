@@ -82,13 +82,17 @@ local function _update_library(options)
 
     for submodule_i = 1, #submodules do
         print("Updater: Checking for updates from submodule '" .. submodules[submodule_i] .. "'...")
-        local did_update = true
+        local did_update = false
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
-                did_update = _update_file(file.path, {
+                local did_update_file = _update_file(file.path, {
                     auto_extension = false,
                     verbose = false
                 })
+
+                if did_update_file then
+                    did_update = true
+                end
             end
         end
 
