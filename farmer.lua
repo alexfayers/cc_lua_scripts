@@ -6,7 +6,7 @@ local logging = require("afscript.core.logging")
 local movement = require("afscript.turtle.movement")
 local inventory = require("afscript.turtle.inventory")
 local state = require("afscript.core.state")
-local utils = require("afscript.utils")
+local utils = require("afscript.turtle.utils")
 
 local logger = logging.new("wheatfarmer")
 
@@ -128,7 +128,7 @@ local function main()
             state.save(_farm_state, STATEFILE)
         end
 
-        utils.refuel()
+        utils.refuel(fuel_source, fuel_threshold)
         farm()
         depositIfChest()
 
