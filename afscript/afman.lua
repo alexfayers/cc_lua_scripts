@@ -52,12 +52,12 @@ local function handleArgs()
                     end
                 end
             else
-                print("Error: '" .. arg[2] .."' is not a valid option for 'update'")
+                print("Error: '" .. tostring(arg[2]) .."' is not a valid option for 'update'")
                 print()
                 help()
             end
         else
-            print("Error: '" .. arg[1] .. "' is not a valid command")
+            print("Error: '" .. tostring(arg[1]) .. "' is not a valid command")
             print()
             help()
         end
