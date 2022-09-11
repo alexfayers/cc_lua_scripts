@@ -8,10 +8,10 @@ local LEVEL = {
 }
 
 local LEVEL_STRINGS = {
-    [0] = "DEBUG",
-    [1] = "INFO",
-    [2] = "WARN",
-    [3] = "ERROR"
+    [0] = "D",
+    [1] = "I",
+    [2] = "W",
+    [3] = "E"
 }
 
 local ALL_LOGGERS = {}

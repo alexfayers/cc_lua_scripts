@@ -2,7 +2,7 @@
 
 local inventory = require("afscript.turtle.inventory")
 local logging = require("afscript.core.logging")
-local logger = logging.new("turtle")
+local logger = logging.new("turtle.interaction")
 
 ---Place a block in front of the turtle of the specified type
 ---@param block_name string The name of the block to place

@@ -1,7 +1,7 @@
 -- Turtle inventory management functions
 
 local logging = require("afscript.core.logging")
-local logger = logging.new("turtle")
+local logger = logging.new("turtle.inventory")
 
 ---Select an item with an exact name from the turtle's inventory
 ---@param item_name string The name of the item to select

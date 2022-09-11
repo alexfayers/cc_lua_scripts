@@ -3,7 +3,7 @@
 local logging = require("afscript.core.logging")
 local inventory = require("afscript.turtle.inventory")
 
-local logger = logging.new("turtle")
+local logger = logging.new("turtle.utils")
 
 ---Check that an item is contained within a chest
 ---@param chest table The wrapped chest to check

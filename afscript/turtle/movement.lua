@@ -3,7 +3,7 @@
 local state = require("afscript.core.state")
 local logging = require("afscript.core.logging")
 
-local logger = logging.new("turtle")
+local logger = logging.new("turtle.movement")
 
 local STATEFILE = ".turtle.position.state"
 
