@@ -3,6 +3,7 @@
 ---Update an arbitrary script from the repo
 ---@param script_name string The name of the script to update
 ---@param options table|nil The options table
+---@return boolean _ True if the script was updated successfully
 local function _update_file(script_name, options)
     assert(type(script_name) == "string", "script_name must be a string")
     assert(type(options) == "nil" or type(options) == "table", "options must be a table when specified")
@@ -25,11 +26,18 @@ local function _update_file(script_name, options)
     local script_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. script_name
     local script_contents = http.get(script_url).readAll()
 
+    if script_contents == nil then
+        print("Error: Could not fetch script '" .. script_name .. "'")
+        return false
+    end
+
     local file = fs.open(script_name, "w")
     file.write(script_contents)
     file.close()
 
     print("Updater: Updated '" .. script_name .. "'")
+
+    return true
 end
 
 ---Fetch the latest afscript library files from github
