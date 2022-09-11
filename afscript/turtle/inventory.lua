@@ -8,7 +8,7 @@ local logger = logging.new("turtle")
 ---@return number _ The number of items in the inventory if the item is selected, or 0 if the item is not found
 local function _select(item_name)
     for i = 1, 16 do
-        local item = turtle.getItemDetail()
+        local item = turtle.getItemDetail(i)
         if item ~= nil and item.name == item_name then
             turtle.select(i)
             logger.debug("Selected slot " .. i .. " for " .. item_name)
@@ -24,7 +24,7 @@ end
 local function _count(item_name)
     local count = 0
     for i = 1, 16 do
-        local item = turtle.getItemDetail()
+        local item = turtle.getItemDetail(i)
         if item ~= nil and item.name == item_name then
             count = count + item.count
         end
