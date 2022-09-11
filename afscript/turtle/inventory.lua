@@ -35,5 +35,6 @@ end
 
 return {
     select = _select,
-    count = _count
+    count = _count,
+    logger = logger,
 }

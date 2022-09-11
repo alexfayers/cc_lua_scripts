@@ -60,4 +60,5 @@ return {
     checkItemInChest = _checkItemInChest,
     pullFromChestBelow = _pullFromChestBelow,
     refuel = _refuel,
+    logger = logger,
 }

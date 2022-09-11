@@ -1,6 +1,8 @@
 -- Functions for interaction with the outside world
 
 local inventory = require("afscript.turtle.inventory")
+local logging = require("afscript.core.logging")
+local logger = logging.new("turtle")
 
 ---Place a block in front of the turtle of the specified type
 ---@param block_name string The name of the block to place
@@ -34,5 +36,6 @@ end
 
 return {
     placeBlock = _placeBlock,
-    placeBlockDown = _placeBlockDown
+    placeBlockDown = _placeBlockDown,
+    logger = logger,
 }

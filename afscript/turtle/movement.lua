@@ -230,4 +230,5 @@ return {
     face = _face,
     moveTo = _moveTo,
     current_position = _current_position,
+    logger = logger,
 }
