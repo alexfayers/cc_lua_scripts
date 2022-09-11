@@ -72,6 +72,7 @@ local function _update_library(options)
 
     local submodules = options.submodules or {
         "core",
+        "meta",
         "turtle"
     }
 
@@ -80,17 +81,16 @@ local function _update_library(options)
     local tree_json = textutils.unserialiseJSON(tree)
 
     for submodule_i = 1, #submodules do
-        print("Updater: Fetching submodule '" .. submodules[submodule_i] .. "'...")
+        print("Updater: Checking for updates from submodule '" .. submodules[submodule_i] .. "'...")
+        local up_to_date = true
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
-                _update_file(file.path, {auto_extension = false, verbose = false})
-                local file_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. file.path
-                local file_contents = http.get(file_url).readAll()
-
-                local file = fs.open(file.path, "w")
-                file.write(file_contents)
-                file.close()
+                up_to_date = _update_file(file.path, {auto_extension = false, verbose = false})
             end
+        end
+
+        if up_to_date then
+            print("Updater: Submodule '" .. submodules[submodule_i] .. "' is already up to date")
         end
     end
     print("Updater: Done!")
