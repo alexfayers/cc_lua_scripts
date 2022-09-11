@@ -1,5 +1,9 @@
 local pretty = require("cc.pretty")
 
+-- define constants
+
+local INVENTORY_FILE = ".storage_completion.txt"
+
 -- define setttings
 
 settings.define("storage.chest_name", {
@@ -208,7 +212,7 @@ function getInventory()
 end
 
 function getInventoryFromFile()
-    local file = fs.open("_storage_completion.txt", "r")
+    local file = fs.open(INVENTORY_FILE, "r")
     if file == nil then
         return {}
     end
@@ -223,7 +227,7 @@ function saveInventoryToCompletionFile(item_table)
     end
 
     -- write the pure item table to a file for auto completion
-    local file = fs.open("_storage_completion.txt", "w")
+    local file = fs.open(INVENTORY_FILE, "w")
     local clean_table = {}
     for k, v in pairs(item_table) do
         local c = 0
@@ -253,7 +257,7 @@ function fullInventoryCheck()
 
     saveInventoryToCompletionFile(item_table)
 
-    print("Storage inventory written to storage_inventory.txt")
+    print("Storage inventory written to inventory.txt")
 end
 
 -- public wrappers
