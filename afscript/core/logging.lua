@@ -133,7 +133,8 @@ local function _new(logger_name)
             ---@param new_level number The log level to set
             setLevel = function (new_level)
                 _setLevel(level_variable, new_level)
-             end
+            end,
+            level = level_variable
         }
     else
         logger = ALL_LOGGERS[logger_name]

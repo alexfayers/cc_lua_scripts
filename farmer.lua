@@ -8,7 +8,7 @@ local inventory = require("afscript.turtle.inventory")
 local state = require("afscript.core.state")
 local utils = require("afscript.turtle.utils")
 
-movement.logger.setLevel(logging.LEVEL.DEBUG)
+movement.logger.level = logging.LEVEL.DEBUG
 
 local logger = logging.new("wheatfarmer")
 
