@@ -85,7 +85,10 @@ local function _update_library(options)
         local up_to_date = true
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
-                up_to_date = _update_file(file.path, {auto_extension = false, verbose = false})
+                up_to_date = _update_file(file.path, {
+                    auto_extension = false,
+                    verbose = false
+                })
             end
         end
 
