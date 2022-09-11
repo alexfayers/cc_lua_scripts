@@ -58,4 +58,4 @@ else
 end
 
 -- Set the autocomplete
-shell.setCompletionFunction("afscript", complete)
+shell.setCompletionFunction("afscriptman", complete)
