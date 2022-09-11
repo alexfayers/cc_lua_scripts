@@ -19,20 +19,38 @@ function selectFromInventory(item_name)
     return 0
 end
 
-function placeBlock()
-    selectFromInventory(bridge_block)
-    turtle.placeDown()
+function placeBlocks()
+    if turtle.detectDown() == false then
+        selectFromInventory(bridge_block)
+        turtle.placeDown()
+    end
+
+    turtle.turnLeft()
+
+    if turtle.detect() == false then
+        selectFromInventory(bridge_block)
+        turtle.place()
+    end
+
+    turtle.turnRight()
+    turtle.turnRight()
+
+    if turtle.detect() == false then
+        selectFromInventory(bridge_block)
+        turtle.place()
+    end
+
+    turtle.turnLeft()
 end
 
 function bridgeGap(length)
     for i = 1, length do
-        if turtle.detectDown() == false then
-            placeBlock()
-        end
+        placeBlocks()
 
         if turtle.detect() then
             turtle.dig()
         end
+
         turtle.forward()
     end
 end
