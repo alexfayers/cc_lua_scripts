@@ -32,27 +32,29 @@ local function help()
     print(" update script <script_name> [<script_name_2>, etc.]")
 end
 
--- Handle updates
-local args = {...}
+-- Handle CLI args
 
-if #args == 0 then
+if #arg == 0 then
     help()
 else
-    if args[1] == "update" then
-        if args[2] == "library" then
+    if arg[1] == "update" then
+        if arg[2] == "library" then
             update.update_library()
-        elseif args[2] == "script" then
-            if args[3] == nil then
+        elseif arg[2] == "script" then
+            if arg[3] == nil then
+                print("Error: No script name provided")
                 help()
             else
-                for i = 3, #args do
-                    update.update_file(args[i])
+                for i = 3, #arg do
+                    update.update_file(arg[i])
                 end
             end
         else
+            print("Error: '" .. arg[2] .."' is not a valid option for 'update'")
             help()
         end
     else
+        print("Error: No command provided")
         help()
     end
 end
