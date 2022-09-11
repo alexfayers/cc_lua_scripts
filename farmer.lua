@@ -11,7 +11,7 @@ local max_seeds = farm_width * farm_height - 1  -- minus 1 for water slot
 
 local fuel_source = "minecraft:charcoal"
 local seed_source = "minecraft:wheat_seeds"
-local sleep_time = 1200
+local sleep_time = 300
 
 local state = {
     position = {
