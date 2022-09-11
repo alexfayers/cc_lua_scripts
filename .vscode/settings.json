@@ -2,6 +2,11 @@
     "Lua.diagnostics.globals": [
         "sleep",
         "turtle",
-        "peripheral"
+        "peripheral",
+        "textutils",
+        "fs",
+        "http",
+        "shell",
+        "settings"
     ]
 }
