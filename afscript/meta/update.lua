@@ -49,6 +49,9 @@ local function _update_file(script_name, options)
         end
 
         -- if the file is different, make a backup and update it
+        if fs.exists(script_name .. ".bak") then
+            fs.delete(script_name .. ".bak")
+        end
         fs.move(script_name, script_name .. ".bak")
     end
 
