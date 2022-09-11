@@ -12,7 +12,7 @@ function selectFromInventory(item_name)
     for i = 1, 16 do
         turtle.select(i)
         local item = turtle.getItemDetail()
-        if item ~= nil and item.name == item_name then
+        if item ~= nil and string.find(item.name, item_name) then
             return item.count
         end
     end
