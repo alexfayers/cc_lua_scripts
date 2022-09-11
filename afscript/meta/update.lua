@@ -49,7 +49,7 @@ local function _update_file(script_name, options)
         end
 
         -- if the file is different, make a backup and update it
-        fs.move(script_name, "." .. script_name .. ".bak")
+        fs.move(script_name, script_name .. ".bak")
     end
 
     local file = fs.open(script_name, "w")
