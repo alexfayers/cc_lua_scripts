@@ -1,5 +1,15 @@
 -- A computercraft wheat farmer
 
+-- imports
+
+local logging = require("afscript.logging")
+local movement = require("afscript.turtle.movement")
+local inventory = require("afscript.turtle.inventory")
+local state = require("afscript.state")
+local utils = require("afscript.utils")
+
+local logger = logging.new("wheatfarmer")
+
 -- define config
 
 local farm_width = 9
@@ -13,236 +23,15 @@ local fuel_source = "minecraft:charcoal"
 local seed_source = "minecraft:wheat_seeds"
 local sleep_time = 300
 
-local state = {
-    position = {
-        x = 0,
-        y = 0,
-        z = 0,
-    },
-    direction = "north",
+local STATEFILE = ".farmer.state"
+
+local _farm_state = state.load(STATEFILE) or {
     fuel_level = 0,
     time_to_harvest = 0,
     always_plant = true
 }
 
-function logTime()
-    return os.date("%H:%M:%S")
-end
-
-function saveState()
-    local file = fs.open("state", "w")
-    file.writeLine(textutils.serialize(state))
-    file.close()
-end
-
-function loadState()
-    local file = fs.open("state", "r")
-    state = textutils.unserialize(file.readAll())
-    file.close()
-end
-
-function log(msg)
-    msg = logTime() .. " I: " .. msg
-    print(msg)
-    local file = fs.open("farmer.log", "a")
-    file.writeLine(msg)
-    file.close()
-end
-
-function debugLog(msg)
-    msg = logTime() .. " D: " .. msg
-    print(msg)
-    local file = fs.open("farmer.log", "a")
-    file.writeLine(msg)
-    file.close()
-end
-
-function selectFromInventory(item_name)
-    for i = 1, 16 do
-        turtle.select(i)
-        local item = turtle.getItemDetail()
-        if item ~= nil and item.name == item_name then
-            return item.count
-        end
-    end
-    return 0
-end
-
-function inventoryCount(item_name)
-    local count = 0
-    for i = 1, 16 do
-        turtle.select(i)
-        local item = turtle.getItemDetail()
-        if item ~= nil and item.name == item_name then
-            count = count + item.count
-        end
-    end
-    return count
-end
-
-function refuel()
-    while turtle.getFuelLevel() < fuel_threshold do
-        log("Refueling ...")
-        if selectFromInventory(fuel_source) > 0 then
-            turtle.refuel(1)
-        else
-            log("Ran out of fuel locally - trying chest!")  -- TODO: notify
-            pullFuelFromChest()
-        end
-    end
-end
-
-function turnLeft()
-    turtle.turnLeft()
-    if state.direction == "north" then
-        state.direction = "west"
-    elseif state.direction == "west" then
-        state.direction = "south"
-    elseif state.direction == "south" then
-        state.direction = "east"
-    elseif state.direction == "east" then
-        state.direction = "north"
-    end
-
-    saveState()
-end
-
-function turnRight()
-    turtle.turnRight()
-    if state.direction == "north" then
-        state.direction = "east"
-    elseif state.direction == "east" then
-        state.direction = "south"
-    elseif state.direction == "south" then
-        state.direction = "west"
-    elseif state.direction == "west" then
-        state.direction = "north"
-    end
-
-    saveState()
-end
-
-function turnAround()
-    turnLeft()
-    turnLeft()
-end
-
-function moveForward()
-    local success = turtle.forward()
-    if success then
-        if state.direction == "north" then
-            state.position.z = state.position.z - 1
-        elseif state.direction == "east" then
-            state.position.x = state.position.x + 1
-        elseif state.direction == "south" then
-            state.position.z = state.position.z + 1
-        elseif state.direction == "west" then
-            state.position.x = state.position.x - 1
-        end
-        saveState()
-    end
-
-    log("Moved to " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
-
-    return success
-end
-
-function moveUp()
-    local success = turtle.up()
-    if success then
-        state.position.y = state.position.y + 1
-        saveState()
-    end
-
-    return success
-end
-
-function moveDown()
-    local success = turtle.down()
-    if success then
-        state.position.y = state.position.y - 1
-        saveState()
-    end
-
-    return success
-end
-
-function faceDirection(direction)
-    if state.direction == direction then
-        return
-    end
-
-    if state.direction == "north" then
-        if direction == "east" then
-            turnRight()
-        elseif direction == "south" then
-            turnAround()
-        elseif direction == "west" then
-            turnLeft()
-        end
-    elseif state.direction == "east" then
-        if direction == "south" then
-            turnRight()
-        elseif direction == "west" then
-            turnAround()
-        elseif direction == "north" then
-            turnLeft()
-        end
-    elseif state.direction == "south" then
-        if direction == "west" then
-            turnRight()
-        elseif direction == "north" then
-            turnAround()
-        elseif direction == "east" then
-            turnLeft()
-        end
-    elseif state.direction == "west" then
-        if direction == "north" then
-            turnRight()
-        elseif direction == "east" then
-            turnAround()
-        elseif direction == "south" then
-            turnLeft()
-        end
-    end
-end
-
-function moveTo(x, y, z)
-    while state.position.x ~= x do
-        if state.position.x < x then
-            faceDirection("east")
-        elseif state.position.x > x then
-            faceDirection("west")
-        end
-        if moveForward() == false then
-            -- TODO: move around?
-            error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
-        end
-    end
-    while state.position.z ~= z do
-        if state.position.z < z then
-            faceDirection("south")
-        elseif state.position.z > z then
-            faceDirection("north")
-        end
-        if moveForward() == false then
-            error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
-        end
-    end
-    while state.position.y ~= y do
-        if state.position.y < y then
-            if moveUp() == false then
-                error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
-            end
-        elseif state.position.y > y then
-            if moveDown() == false then
-                error("Failed to move to " .. x .. ", " .. y .. ", " .. z)
-            end
-        end
-    end
-end
-
-function harvest()
+local function harvest()
     -- check if the turtle is on top of a fully grown wheat
 
     local success, data = turtle.inspectDown()
@@ -252,7 +41,7 @@ function harvest()
     return false
 end
 
-function plant()
+local function plant()
     if selectFromInventory(seed_source) > 0 then
         turtle.placeDown()
     else
@@ -260,23 +49,22 @@ function plant()
     end
 end
 
-function harvestAndPlant()
-    if harvest() == true or state.always_plant == true then
+local function harvestAndPlant()
+    if harvest() == true or _farm_state.always_plant == true then
         plant()
     end
 end
 
-function deposit()
-    log("Depositing wheat ...")
-    while selectFromInventory("minecraft:wheat") > 0 do
+local function deposit()
+    while inventory.select("minecraft:wheat") > 0 do
+        logger.info("Depositing wheat ...")
         turtle.dropDown()
     end
 
-    log("Depositing seeds ...")
-    local total_seed_count = inventoryCount(seed_source)
+    local total_seed_count = inventory.count(seed_source)
     while total_seed_count > max_seeds do
-        log("got enough seeds - depositing extras")
-        local stack_seed_count = selectFromInventory(seed_source)
+        logger.info("Depositing seeds ...")
+        local stack_seed_count = inventory.select(seed_source)
         local extra_seed_count = total_seed_count - max_seeds
         local drop_count = math.min(extra_seed_count, stack_seed_count)
 
@@ -286,136 +74,101 @@ function deposit()
     end
 end
 
-function depositIfChest()
+local function depositIfChest()
     local success, data = turtle.inspectDown()
     if success and data.name == "minecraft:chest" then
         deposit()
     end
 end
 
-function pullFuelFromChest()
-    local success, data = turtle.inspectDown()
-    if success and data.name == "minecraft:chest" then
-        if checkItemFirstInChest(fuel_source) then
-            turtle.suckDown()
-        else
-            error("No fuel found in chest")  -- TODO: notify
-        end
-    end
-end
-
-function checkItemFirstInChest(searchItem)
-    local chest = peripheral.wrap("bottom")
-
-    for i = 1, chest.size() do
-        local item = chest.getItemDetail(i)
-        if item ~= nil and item.name == searchItem then
-            return true
-        end
-    end
-
-    return false
-end
-
-function farm()
-    moveTo(0, 0, 0)
-    faceDirection("north")
+local function farm()
+    movement.moveTo(0, 0, 0)
+    movement.face("north")
 
     -- do the first plant
-    moveForward()
+    movement.forward()
     harvestAndPlant()
 
     -- do the whole farm
     for i = 1, farm_width do
         for j = 1, (farm_height - 1) do
             if i ~= farm_width or j ~= (farm_height - 1) then
-                moveForward()
+                movement.forward()
             end
             harvestAndPlant()
         end
         if i ~= farm_width then
             if i % 2 == 0 then
-                turnLeft()
-                moveForward()
-                turnLeft()
+                movement.turnLeft()
+                movement.forward()
+                movement.turnLeft()
             else
-                turnRight()
-                moveForward()
-                turnRight()
+                movement.turnRight()
+                movement.forward()
+                movement.turnRight()
             end
         else
-            moveForward()  -- is this right?
+            movement.forward()
         end
         harvestAndPlant()
     end
-    moveTo(0, 0, 0)
-    faceDirection("north")
+    movement.moveTo(0, 0, 0)
+    movement.face("north")
 end
 
-function main()
-    if fs.exists("state") then
-        loadState()
-    else
-        saveState()
-    end
+local function main()
     while true do
-        while state.time_to_harvest > 0 do
-            if state.time_to_harvest % 60 == 0 then
-                log("Waiting " .. state.time_to_harvest .. " seconds before harvesting again")
+        while _farm_state.time_to_harvest > 0 do
+            if _farm_state.time_to_harvest % 60 == 0 then
+                logger.info("Waiting " .. _farm_state.time_to_harvest .. " seconds before harvesting again")
             end
 
             sleep(1)
-            state.time_to_harvest = state.time_to_harvest - 1
-            saveState()
+            _farm_state.time_to_harvest = _farm_state.time_to_harvest - 1
+            state.save(_farm_state, STATEFILE)
         end
 
-        refuel()
+        utils.refuel()
         farm()
         depositIfChest()
 
         -- only always plant on the first run
-        if state.always_plant == true then
-            state.always_plant = false
+        if _farm_state.always_plant == true then
+            _farm_state.always_plant = false
         end
 
-        state.time_to_harvest = sleep_time  -- wait 20 minutes before harvesting again
-        saveState()
+        _farm_state.time_to_harvest = sleep_time  -- wait 20 minutes before harvesting again
+        state.save(_farm_state, STATEFILE)
     end
 end
 
 function test()
-    if fs.exists("state") then
-        loadState()
-    else
-        saveState()
-    end
+    logger.info("Testing ...")
+    logger.info("Fuel level: " .. turtle.getFuelLevel())
+    logger.info("Position: " .. _farm_state.position.x .. ", " .. _farm_state.position.y .. ", " .. _farm_state.position.z)
+    logger.info("Direction: " .. _farm_state.direction)
+    logger.info("Fuel threshold: " .. fuel_threshold)
+    logger.info("Farm width: " .. farm_width)
+    logger.info("Farm height: " .. farm_height)
+    logger.info("Tesing movement ...")
+    movement.moveTo(2, 0, 0)
+    movement.moveTo(0, 0, 0)
+    movement.moveTo(0, 2, 0)
+    movement.moveTo(0, 0, 0)
+    movement.moveTo(0, 0, 2)
+    movement.moveTo(0, 0, 0)
 
-    log("Testing ...")
-    log("Fuel level: " .. turtle.getFuelLevel())
-    log("Position: " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
-    log("Direction: " .. state.direction)
-    log("Fuel threshold: " .. fuel_threshold)
-    log("Farm width: " .. farm_width)
-    log("Farm height: " .. farm_height)
-    log("Tesing movement ...")
-    moveTo(2, 0, 0)
-    moveTo(0, 0, 0)
-    moveTo(0, 2, 0)
-    moveTo(0, 0, 0)
-    moveTo(0, 0, 2)
-    moveTo(0, 0, 0)
+    movement.moveTo(-2, 0, 0)
+    movement.moveTo(0, 0, 0)
+    movement.moveTo(0, -2, 0)
+    movement.moveTo(0, 0, 0)
+    movement.moveTo(0, 0, -2)
+    movement.moveTo(0, 0, 0)
 
-    moveTo(-2, 0, 0)
-    moveTo(0, 0, 0)
-    moveTo(0, -2, 0)
-    moveTo(0, 0, 0)
-    moveTo(0, 0, -2)
-    moveTo(0, 0, 0)
-
-    log("Position: " .. state.position.x .. ", " .. state.position.y .. ", " .. state.position.z)
+    logger.info("Position: " .. _farm_state.position.x .. ", " .. _farm_state.position.y .. ", " .. _farm_state.position.z)
 
     -- moveTo(0, 0, 0)
-    log("Testing done")
+    logger.info("Testing done")
 end
 
 main()

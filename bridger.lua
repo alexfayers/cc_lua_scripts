@@ -1,4 +1,12 @@
--- turtle script to bridge gaps
+-- Turtle script to bridge gaps
+
+-- imports
+
+local logging = require("afscript.logging")
+local movement = require("afscript.turtle.movement")
+local interaction = require("afscript.turtle.interaction")
+
+local logger = logging.new("bridgebot")
 
 -- constants
 
@@ -8,42 +16,26 @@ local bridge_length = tonumber(args[2])
 
 -- functions
 
-function selectFromInventory(item_name)
-    for i = 1, 16 do
-        turtle.select(i)
-        local item = turtle.getItemDetail()
-        if item ~= nil and string.find(item.name, item_name) then
-            return item.count
-        end
-    end
-    return 0
+---Place blocks below and left and right of the turtle
+local function placeBlocks()
+    interaction.placeBlockDown(bridge_block)
+
+    movement.turnLeft()
+
+    interaction.placeBlock(bridge_block)
+
+    movement.turnRight()
+    movement.turnRight()
+
+    interaction.placeBlock(bridge_block)
+
+    movement.turnLeft()
+
+    logger.debug("Completed one slot")
 end
 
-function placeBlocks()
-    if turtle.detectDown() == false then
-        selectFromInventory(bridge_block)
-        turtle.placeDown()
-    end
-
-    turtle.turnLeft()
-
-    if turtle.detect() == false then
-        selectFromInventory(bridge_block)
-        turtle.place()
-    end
-
-    turtle.turnRight()
-    turtle.turnRight()
-
-    if turtle.detect() == false then
-        selectFromInventory(bridge_block)
-        turtle.place()
-    end
-
-    turtle.turnLeft()
-end
-
-function bridgeGap(length)
+---Place blocks in a row
+local function bridgeGap(length)
     for i = 1, length do
         placeBlocks()
 
@@ -51,23 +43,15 @@ function bridgeGap(length)
             turtle.dig()
         end
 
-        turtle.forward()
+        movement.forward()
     end
+    logger.debug("Completed bridge")
 end
 
-function come_back(length)
-    turtle.turnLeft()
-    turtle.turnLeft()
-    for i = 1, length do
-        turtle.forward()
-    end
-    turtle.turnLeft()
-    turtle.turnLeft()
-end
-
-function main()
+---Build a bridge
+local function main()
     bridgeGap(bridge_length)
-    -- come_back(bridge_length)
+    -- movement.moveTo(0,0,0)
 end
 
 main()

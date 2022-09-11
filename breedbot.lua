@@ -1,38 +1,24 @@
+-- Turtle script to breed animals
+
+-- imports
+local logging = require("afscript.logging")
+local inventory = require("afscript.turtle.inventory")
+
+local logger = logging.new("breedbot")
+
 -- define config
 
 local breeding_item = "minecraft:wheat"  -- item to use for breeding
 local sleep_time = 300  -- 5 minutes
 local breedCount = 48  -- number of times to attempt to breed each run
 
-function log(msg)
-    msg = os.date("%c") .. " " .. msg
-    print(msg)
-    local file = fs.open("breedbot.log", "a")
-    file.writeLine(msg)
-    file.close()
-end
-
--- define functions
-
-function selectFromInventory(item_name)
-    for i = 1, 16 do
-        turtle.select(i)
-        local item = turtle.getItemDetail()
-        if item ~= nil and item.name == item_name then
-            return item.count
-        end
-    end
-    return 0
-end
-
-
-function breedBelow()
-
+---Breed animals in the pen
+local function breedBelow()
     -- use the wheat to breed the animals 20 times
-    selectFromInventory(breeding_item)
+    inventory.select(breeding_item)
 
     for i = 1, breedCount do
-        log("Breeding animals ..." .. i)
+        logger.info("Breeding animals ..." .. i)
 
         turtle.placeDown()
 
@@ -40,12 +26,12 @@ function breedBelow()
     end
 end
 
-function main()
-    
+---Breed animals, sleep, repeat
+local function main()
     while true do
         breedBelow()
 
-        log("Sleeping for " .. sleep_time .. " seconds before next breeding")
+        logger.info("Sleeping for " .. sleep_time .. " seconds before next breeding")
         sleep(sleep_time)
     end
 end
