@@ -28,7 +28,7 @@ end
 ---@param logger_name string The name of the logger
 ---@return string _ The filename
 local function _build_filename(logger_name)
-    return logger_name .. ".log"
+    return "logs/" .. logger_name .. ".log"
 end
 
 ---Log a message to the console and to a file (at debug level)
