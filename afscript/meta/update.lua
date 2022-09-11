@@ -16,6 +16,10 @@ local function _update_file(script_name, options)
         options.auto_extension = true
     end
 
+    if options.verbose == nil then
+        options.verbose = true
+    end
+
     if options.auto_extension == true then
         -- if the script doesn't end with .lua, add it
         if not script_name:match(".*lua$") then
@@ -38,7 +42,9 @@ local function _update_file(script_name, options)
         local_file.close()
 
         if local_contents == script_contents then
-            print("Updater: '" .. script_name .. "' is already up to date")
+            if options.verbose then
+                print("Updater: '" .. script_name .. "' is already up to date")
+            end
             return true
         end
 
@@ -77,7 +83,7 @@ local function _update_library(options)
         print("Updater: Fetching submodule '" .. submodules[submodule_i] .. "'...")
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
-                _update_file(file.path, {auto_extension = false})
+                _update_file(file.path, {auto_extension = false, verbose = false})
                 local file_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. file.path
                 local file_contents = http.get(file_url).readAll()
 
