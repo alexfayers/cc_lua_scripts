@@ -83,7 +83,7 @@ local function _update_library(options)
     local tree_json = textutils.unserialiseJSON(tree)
 
     for submodule_i = 1, #submodules do
-        print("Updater: Checking for updates for '" .. submodules[submodule_i] .. "'...")
+        print("Updater: Updating '" .. submodules[submodule_i] .. "'...")
         local did_update = false
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
