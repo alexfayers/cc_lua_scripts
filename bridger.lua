@@ -70,3 +70,4 @@ function main()
     come_back(bridge_length)
 end
 
+main()
