@@ -16,7 +16,8 @@ local main_chest_out_name = main_chest_in_name
 -- validate settings
 
 if main_chest_in_name == nil then
-    error("No chest name specified in settings. Use `set storage.chest_name {name}` to set the name of the chest to use for input/output.")
+    print("No chest name specified in settings. Please run 'set storage.chest_name {NAME}'.")
+    error("No chest name specified in settings.")
 end
 
 -- get the main chest
@@ -25,10 +26,14 @@ local main_chest_in = peripheral.wrap(main_chest_in_name)
 local main_chest_out = peripheral.wrap(main_chest_out_name)
 
 if main_chest_in == nil then
+    print("No chest found with name '" .. main_chest_in_name .. "'. Please run 'set storage.chest_name {NAME}'.")
+    print("And ensure that the full name is specified.")
     error("No chest found with name " .. main_chest_in_name)
 end
 
 if main_chest_out == nil then
+    print("No chest found with name '" .. main_chest_out_name .. "'. Please run 'set storage.chest_name {NAME}'.")
+    print("And ensure that the full name is specified.")
     error("No chest found with name " .. main_chest_out_name)
 end
 
