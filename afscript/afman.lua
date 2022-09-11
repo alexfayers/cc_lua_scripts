@@ -57,7 +57,7 @@ local function handleArgs()
                 help()
             end
         else
-            print("Error: '" .. args[1] .. "' is not a valid command")
+            print("Error: '" .. arg[1] .. "' is not a valid command")
             print()
             help()
         end
