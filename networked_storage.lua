@@ -16,7 +16,7 @@ local main_chest_out_name = main_chest_in_name
 -- validate settings
 
 if main_chest_in_name == nil then
-    error("No chest name specified in settings")
+    error("No chest name specified in settings. Use `set storage.chest_name {name}` to set the name of the chest to use for input/output.")
 end
 
 -- get the main chest
