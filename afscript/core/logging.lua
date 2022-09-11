@@ -89,6 +89,8 @@ end
 ---@param level_variable number The variable that contains the log level
 ---@param new_level number The log level to set
 local function _setLevel(level_variable, new_level)
+    print(level_variable)
+    print(new_level)
     if new_level >= LEVEL.DEBUG and new_level <= LEVEL.ERROR then
         level_variable = new_level
     else
