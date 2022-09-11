@@ -11,7 +11,7 @@ settings.define("storage.chest_name", {
 -- read settings
 
 local main_chest_in_name = settings.get("storage.chest_name")
-local main_chest_out_name = main_chest_in_name
+local main_chest_out_name = settings.get("storage.chest_name")
 
 -- validate settings
 
