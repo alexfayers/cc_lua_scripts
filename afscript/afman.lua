@@ -43,6 +43,7 @@ else
         elseif arg[2] == "script" then
             if arg[3] == nil then
                 print("Error: No script name provided")
+                print()
                 help()
             else
                 for i = 3, #arg do
@@ -51,13 +52,15 @@ else
             end
         else
             print("Error: '" .. arg[2] .."' is not a valid option for 'update'")
+            print()
             help()
         end
     else
-        print("Error: No command provided")
+        print("Error: '" .. args[1] .. "' is not a valid command")
+        print()
         help()
     end
 end
 
 -- Set the autocomplete
-shell.setCompletionFunction("afscriptman", complete)
+shell.setCompletionFunction("afman.lua", complete)
