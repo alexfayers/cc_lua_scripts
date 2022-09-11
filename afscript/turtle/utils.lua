@@ -1,6 +1,8 @@
 -- Misc functions for turtles
 
 local logging = require("afscript.core.logging")
+local inventory = require("afscript.turtle.inventory")
+
 local logger = logging.new("turtle")
 
 ---Check that an item is contained within a chest
@@ -36,12 +38,12 @@ end
 
 ---Refuel the turtle to a specified level, using a specified fuel item
 ---@param fuel_name string The name of the fuel item to use
----@param fuel_level number The level to refuel to
+---@param fuel_threshold number The level to refuel to
 ---@return boolean _ True if the turtle was refueled to the target level, false if not
 local function _refuel(fuel_name, fuel_threshold)
     while turtle.getFuelLevel() < fuel_threshold do
         logger.debug("Refueling ...")
-        if selectFromInventory(fuel_name) > 0 then
+        if inventory.select(fuel_name) > 0 then
             turtle.refuel(1)
         else
             logger.warn("Ran out of fuel locally - trying chest!") -- TODO: notify
