@@ -64,17 +64,20 @@ if not main_chest_in_on_modem then
     error("Main input chest is not on the modem")
 end
 
-local main_chest_out_on_modem = false
-for i = 1, #chests do
-    if chests[i] == main_chest_out_name then
-        table.remove(chests, i)
-        main_chest_out_on_modem = true
-        break
-    end
-end
 
-if not main_chest_out_on_modem then
-    error("Main output chest is not on the modem")
+if main_chest_out_name ~= main_chest_in_name then
+    local main_chest_out_on_modem = false
+    for i = 1, #chests do
+        if chests[i] == main_chest_out_name then
+            table.remove(chests, i)
+            main_chest_out_on_modem = true
+            break
+        end
+    end
+
+    if not main_chest_out_on_modem then
+        error("Main output chest is not on the modem")
+    end
 end
 
 -- loop through all the chests
