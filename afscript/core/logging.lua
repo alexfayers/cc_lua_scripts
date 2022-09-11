@@ -88,7 +88,7 @@ end
 ---Set the current log level
 ---@param level_variable number The variable that contains the log level
 ---@param new_level number The log level to set
-local function _set_level(level_variable, new_level)
+local function _setLevel(level_variable, new_level)
     if new_level >= LEVEL.DEBUG and new_level <= LEVEL.ERROR then
         level_variable = new_level
     else
@@ -129,8 +129,8 @@ local function _new(logger_name)
             end,
             --- Set the current log level
             ---@param new_level number The log level to set
-            set_level = function (new_level)
-                _set_level(level_variable, new_level)
+            setLevel = function (new_level)
+                _setLevel(level_variable, new_level)
              end
         }
     else
