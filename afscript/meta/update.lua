@@ -31,9 +31,24 @@ local function _update_file(script_name, options)
         return false
     end
 
+    -- if the file already exists, check if it's different
+    if fs.exists(script_name) then
+        local local_file = fs.open(script_name, "r")
+        local local_contents = local_file.readAll()
+        local_file.close()
+
+        if local_contents == script_contents then
+            print("Updater: '" .. script_name .. "' is already up to date")
+            return true
+        end
+
+        -- if the file is different, make a backup and update it
+        fs.move(script_name, "." .. script_name .. ".bak")
+    end
+
     local file = fs.open(script_name, "w")
     file.write(script_contents)
-    file.close()
+    file.close()    
 
     print("Updater: Updated '" .. script_name .. "'")
 
