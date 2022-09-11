@@ -10,6 +10,8 @@ local fuel_threshold = 100
 local max_seeds = farm_width * farm_height - 1  -- minus 1 for water slot
 
 local fuel_source = "minecraft:charcoal"
+local seed_source = "minecraft:wheat_seeds"
+local sleep_time = 1200
 
 local state = {
     position = {
@@ -251,7 +253,7 @@ function harvest()
 end
 
 function plant()
-    if selectFromInventory("minecraft:wheat_seeds") > 0 then
+    if selectFromInventory(seed_source) > 0 then
         turtle.placeDown()
     else
         log("No wheat seeds found in inventory")  -- TODO: notify
@@ -271,10 +273,10 @@ function deposit()
     end
 
     log("Depositing seeds ...")
-    local total_seed_count = inventoryCount("minecraft:wheat_seeds")
+    local total_seed_count = inventoryCount(seed_source)
     while total_seed_count > max_seeds do
         log("got enough seeds - depositing extras")
-        local stack_seed_count = selectFromInventory("minecraft:wheat_seeds")
+        local stack_seed_count = selectFromInventory(seed_source)
         local extra_seed_count = total_seed_count - max_seeds
         local drop_count = math.min(extra_seed_count, stack_seed_count)
 
@@ -376,7 +378,7 @@ function main()
             state.always_plant = false
         end
 
-        state.time_to_harvest = 1200  -- wait 20 minutes before harvesting again
+        state.time_to_harvest = sleep_time  -- wait 20 minutes before harvesting again
         saveState()
     end
 end
