@@ -104,38 +104,32 @@ end
 ---@return table _ The logger
 local function _new(logger_name)
     local log_filename = _build_filename(logger_name)
-    local level_variable = LEVEL.INFO
     local logger = {}
 
     if ALL_LOGGERS[logger_name] == nil then
-        logger = {
-            --- Log a message at debug level
-            ---@param msg string The message to log
-            debug = function(msg) 
-                _debug(level_variable, msg, log_filename)
-            end,
-            --- Log a message at information level
-            ---@param msg string The message to log
-            info = function(msg)
-                _info(level_variable, msg, log_filename)
-            end,
-            --- Log a message at warning level
-            ---@param msg string The message to log
-            warn = function(msg)
-                _warn(level_variable, msg, log_filename)
-            end,
-            --- Log a message at error level
-            ---@param msg string The message to log
-            error = function(msg)
-                _error(level_variable, msg, log_filename)
-            end,
-            --- Set the current log level
-            ---@param new_level number The log level to set
-            setLevel = function (new_level)
-                _setLevel(level_variable, new_level)
-            end,
-            level = level_variable
-        }
+        logger.level = LEVEL.INFO
+
+        --- Log a message at debug level
+        ---@param msg string The message to log
+        logger.debug = function(msg) _debug(logger.level, msg, log_filename) end
+
+        --- Log a message at information level
+        ---@param msg string The message to log
+        logger.info = function(msg) _info(logger.level, msg, log_filename) end
+
+        --- Log a message at warning level
+        ---@param msg string The message to log
+        logger.warn = function(msg) _warn(logger.level, msg, log_filename) end
+
+        --- Log a message at error level
+        ---@param msg string The message to log
+        logger.error = function(msg) _error(logger.level, msg, log_filename) end
+
+        --- Set the current log level
+        ---@param new_level number The log level to set
+        logger.setLevel = function(new_level) _setLevel(logger.level, new_level) end
+        
+        ALL_LOGGERS[logger_name] = logger
     else
         logger = ALL_LOGGERS[logger_name]
     end
