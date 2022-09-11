@@ -6,9 +6,11 @@
 local function _update(options)
     assert(type(options) == "nil" or type(options) == "table", "options must be a table when specified")
 
-    local options = options or {}
+    if options == nil then
+        options = {}
+    end
 
-    local submodules = {
+    local submodules = options.submodules or {
         "core",
         "turtle"
     }
@@ -18,8 +20,8 @@ local function _update(options)
     local tree_json = textutils.unserialiseJSON(tree)
 
     for _, file in ipairs(tree_json.tree) do
-        for submodule in submodules do
-            if file.path:match("^afscript/" .. submodule) then
+        for submodule_i = 1, #submodules do
+            if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
                 local file_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. file.path
                 local file_contents = http.get(file_url).readAll()
 
