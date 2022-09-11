@@ -2,10 +2,10 @@
 
 -- imports
 
-local logging = require("afscript.logging")
+local logging = require("afscript.core.logging")
 local movement = require("afscript.turtle.movement")
 local inventory = require("afscript.turtle.inventory")
-local state = require("afscript.state")
+local state = require("afscript.core.state")
 local utils = require("afscript.utils")
 
 local logger = logging.new("wheatfarmer")

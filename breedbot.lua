@@ -1,7 +1,7 @@
 -- Turtle script to breed animals
 
 -- imports
-local logging = require("afscript.logging")
+local logging = require("afscript.core.logging")
 local inventory = require("afscript.turtle.inventory")
 
 local logger = logging.new("breedbot")

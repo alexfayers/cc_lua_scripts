@@ -1,6 +1,6 @@
 -- Misc functions for turtles
 
-local logging = require("afscript.logging")
+local logging = require("afscript.core.logging")
 local logger = logging.new("turtle")
 
 ---Check that an item is contained within a chest

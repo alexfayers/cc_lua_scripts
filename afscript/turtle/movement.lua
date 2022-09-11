@@ -1,7 +1,7 @@
 -- Turtle movement functions
 
-local state = require("afscript.state")
-local logging = require("afscript.logging")
+local state = require("afscript.core.state")
+local logging = require("afscript.core.logging")
 
 local logger = logging.new("turtle")
 
