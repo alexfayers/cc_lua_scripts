@@ -45,7 +45,7 @@ local function _update_file(script_name, options)
             if options.verbose then
                 print("Updater: '" .. script_name .. "' is already up to date")
             end
-            return true
+            return false
         end
 
         -- if the file is different, make a backup and update it
@@ -82,17 +82,17 @@ local function _update_library(options)
 
     for submodule_i = 1, #submodules do
         print("Updater: Checking for updates from submodule '" .. submodules[submodule_i] .. "'...")
-        local up_to_date = true
+        local did_update = true
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
-                up_to_date = _update_file(file.path, {
+                did_update = _update_file(file.path, {
                     auto_extension = false,
                     verbose = false
                 })
             end
         end
 
-        if up_to_date then
+        if not did_update then
             print("Updater: Submodule '" .. submodules[submodule_i] .. "' is already up to date")
         end
     end
