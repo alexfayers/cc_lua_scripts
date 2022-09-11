@@ -1,17 +1,44 @@
 local pretty = require("cc.pretty")
 
+-- define setttings
 
-local main_chest_in_name = "minecraft:chest_0"
-local main_chest_out_name = "minecraft:chest_1"
+settings.define("storage.chest_name", {
+    description = "Network name for the chest for input/output within your storage system",
+    default=nil,
+    type = "string"
+})
+
+-- read settings
+
+local main_chest_in_name = settings.get("storage.chest_name")
+local main_chest_out_name = main_chest_in_name
+
+-- validate settings
+
+if main_chest_in_name == nil then
+    error("No chest name specified in settings")
+end
 
 -- get the main chest
 
 local main_chest_in = peripheral.wrap(main_chest_in_name)
 local main_chest_out = peripheral.wrap(main_chest_out_name)
 
+if main_chest_in == nil then
+    error("No chest found with name " .. main_chest_in_name)
+end
+
+if main_chest_out == nil then
+    error("No chest found with name " .. main_chest_out_name)
+end
+
 -- get the modem
 
 local modem = peripheral.find("modem")
+
+if modem == nil then
+    error("No modem found")
+end
 
 -- get all the chests on the modem
 
