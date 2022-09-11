@@ -81,13 +81,13 @@ local function _forward()
     local success = turtle.forward()
     if success then
         if _current_position.direction == "north" then
-            _current_position.position.z = _current_position.position.z - 1
+            _current_position.z = _current_position.z - 1
         elseif _current_position.direction == "east" then
-            _current_position.position.x = _current_position.position.x + 1
+            _current_position.x = _current_position.x + 1
         elseif _current_position.direction == "south" then
-            _current_position.position.z = _current_position.position.z + 1
+            _current_position.z = _current_position.z + 1
         elseif _current_position.direction == "west" then
-            _current_position.position.x = _current_position.position.x - 1
+            _current_position.x = _current_position.x - 1
         end
         logger.debug("Moved FORWARD to " .. _currentPositionString())
         state.save(_current_position, STATEFILE)
@@ -101,7 +101,7 @@ end
 local function _up()
     local success = turtle.up()
     if success then
-        _current_position.position.y = _current_position.position.y + 1
+        _current_position.y = _current_position.y + 1
         logger.debug("Moved UP to " .. _currentPositionString())
         state.save(_current_position, STATEFILE)
     end
@@ -114,7 +114,7 @@ end
 local function _down()
     local success = turtle.down()
     if success then
-        _current_position.position.y = _current_position.position.y - 1
+        _current_position.y = _current_position.y - 1
         logger.debug("Moved DOWN to " .. _currentPositionString())
         state.save(_current_position, STATEFILE)
     end
@@ -178,11 +178,11 @@ end
 ---@param z number The z coordinate to move to
 ---@return boolean _ True if the turtle moved to the position
 local function _moveTo(x, y, z)
-    while _current_position.position.x ~= x do
+    while _current_position.x ~= x do
         local did_turn = false
-        if _current_position.position.x < x then
+        if _current_position.x < x then
             did_turn = _face("east")
-        elseif _current_position.position.x > x then
+        elseif _current_position.x > x then
             did_turn = _face("west")
         end
         if not did_turn or not _forward() then
@@ -191,11 +191,11 @@ local function _moveTo(x, y, z)
             return false
         end
     end
-    while _current_position.position.z ~= z do
+    while _current_position.z ~= z do
         local did_turn = false
-        if _current_position.position.z < z then
+        if _current_position.z < z then
             did_turn = _face("south")
-        elseif _current_position.position.z > z then
+        elseif _current_position.z > z then
             did_turn = _face("north")
         end
         if not did_turn or not _forward() then
@@ -203,13 +203,13 @@ local function _moveTo(x, y, z)
             return false
         end
     end
-    while _current_position.position.y ~= y do
-        if _current_position.position.y < y then
+    while _current_position.y ~= y do
+        if _current_position.y < y then
             if not _up() then
                 logger.error("Failed to move to x=" .. x, "y=" .. y, "z=" .. z)
                 return false
             end
-        elseif _current_position.position.y > y then
+        elseif _current_position.y > y then
             if not _down() then
                 logger.error("Failed to move to x=" .. x, "y=" .. y, "z=" .. z)
                 return false
