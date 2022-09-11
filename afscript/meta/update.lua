@@ -56,7 +56,9 @@ local function _update_file(script_name, options)
     file.write(script_contents)
     file.close()    
 
-    print("Updater: Updated '" .. script_name .. "'")
+    if options.verbose then
+        print("Updater: Updated '" .. script_name .. "'")
+    end
 
     return true
 end
