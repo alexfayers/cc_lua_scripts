@@ -28,8 +28,8 @@ end
 local function help()
     print("Usage: " .. arg[0] .. " <command> [options]")
     print("Commands:")
-    print(" " .. arg[0] .. " update library")
-    print(" " .. arg[0] .. " update script <script_name> [<script_name_2>, etc.]")
+    print(" update library")
+    print(" update script <script_name> [<script_name_2>, etc.]")
 end
 
 -- Handle updates
