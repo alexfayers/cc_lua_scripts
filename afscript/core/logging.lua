@@ -85,19 +85,6 @@ local function _error(level_variable, msg, log_filename)
     end
 end
 
----Set the current log level
----@param level_variable number The variable that contains the log level
----@param new_level number The log level to set
-local function _setLevel(level_variable, new_level)
-    print(level_variable)
-    print(new_level)
-    if new_level >= LEVEL.DEBUG and new_level <= LEVEL.ERROR then
-        level_variable = new_level
-    else
-        error("Invalid log level: " .. new_level)
-    end
-end
-
 
 ---Create a new logger, or return an existing one if it already exists
 ---@param logger_name string The name of the logger
@@ -124,10 +111,6 @@ local function _new(logger_name)
         --- Log a message at error level
         ---@param msg string The message to log
         logger.error = function(msg) _error(logger.level, msg, log_filename) end
-
-        --- Set the current log level
-        ---@param new_level number The log level to set
-        logger.setLevel = function(new_level) _setLevel(logger.level, new_level) end
         
         ALL_LOGGERS[logger_name] = logger
     else
