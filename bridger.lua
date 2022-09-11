@@ -67,7 +67,7 @@ end
 
 function main()
     bridgeGap(bridge_length)
-    come_back(bridge_length)
+    -- come_back(bridge_length)
 end
 
 main()
