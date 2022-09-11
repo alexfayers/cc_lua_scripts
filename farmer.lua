@@ -45,7 +45,7 @@ local function plant()
     if inventory.select(seed_source) > 0 then
         turtle.placeDown()
     else
-        log("No wheat seeds found in inventory")  -- TODO: notify
+        logger.warn("No wheat seeds found in inventory")  -- TODO: notify
     end
 end
 
