@@ -7,6 +7,7 @@
         "fs",
         "http",
         "shell",
-        "settings"
+        "settings",
+        "printError"
     ]
 }
