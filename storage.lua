@@ -20,7 +20,7 @@ local _peripherals = {
         object = nil
     },
     chest_output = {
-        settings.get("storage.chest_name"),
+        name = settings.get("storage.chest_name"),
         object = nil
     },
     modem = {
