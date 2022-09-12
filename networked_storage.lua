@@ -14,51 +14,64 @@ settings.define("storage.chest_name", {
 
 -- read settings
 
-local main_chest_in_name = settings.get("storage.chest_name")
-local main_chest_out_name = settings.get("storage.chest_name")
+local _peripherals = {
+    chest_input = {
+        name = settings.get("storage.chest_name"),
+        object = nil
+    },
+    chest_output = {
+        settings.get("storage.chest_name"),
+        object = nil
+    },
+    modem = {
+        name = nil,
+        object = nil
+    }
+}
 
 -- validate settings
 
-if main_chest_in_name == nil then
+if _peripherals.chest_input.name == nil then
     print("No chest name specified in settings. Please run 'set storage.chest_name {NAME}'.")
     error("No chest name specified in settings.")
 end
 
 -- get the main chest
 
-local main_chest_in = peripheral.wrap(main_chest_in_name)
-local main_chest_out = peripheral.wrap(main_chest_out_name)
+_peripherals.chest_input.object = peripheral.wrap(_peripherals.chest_input.name)
 
-if main_chest_in == nil then
-    print("No chest found with name '" .. main_chest_in_name .. "'. Please run 'set storage.chest_name {NAME}'.")
+if _peripherals.chest_input.object == nil then
+    print("No chest found with name '" .. _peripherals.chest_input.name .. "'. Please run 'set storage.chest_name {NAME}'.")
     print("And ensure that the full name is specified.")
-    error("No chest found with name " .. main_chest_in_name)
+    error("No chest found with name " .. _peripherals.chest_input.name)
 end
 
-if main_chest_out == nil then
-    print("No chest found with name '" .. main_chest_out_name .. "'. Please run 'set storage.chest_name {NAME}'.")
+_peripherals.chest_output.object = peripheral.wrap(_peripherals.chest_output.name)
+
+if _peripherals.chest_output.object == nil then
+    print("No chest found with name '" .. _peripherals.chest_output.name .. "'. Please run 'set storage.chest_name {NAME}'.")
     print("And ensure that the full name is specified.")
-    error("No chest found with name " .. main_chest_out_name)
+    error("No chest found with name " .. _peripherals.chest_output.name)
 end
 
 -- get the modem
 
-local modem = peripheral.find("modem")
+_peripherals.modem.object = peripheral.find("modem")
 
-if modem == nil then
+if _peripherals.modem.object == nil then
     error("No modem found")
 end
 
 -- get all the chests on the modem
 
-local chests = modem.getNamesRemote()
+local storage_chests = _peripherals.modem.object.getNamesRemote()
 
 -- ensure that the main chests are on the modem
 
 local main_chest_in_on_modem = false
-for i = 1, #chests do
-    if chests[i] == main_chest_in_name then
-        table.remove(chests, i)
+for i = 1, #storage_chests do
+    if storage_chests[i] == storage_chests.input.name then
+        table.remove(storage_chests, i)
         main_chest_in_on_modem = true
         break
     end
@@ -69,11 +82,11 @@ if not main_chest_in_on_modem then
 end
 
 
-if main_chest_out_name ~= main_chest_in_name then
+if storage_chests.output.name ~= storage_chests.input.name then
     local main_chest_out_on_modem = false
-    for i = 1, #chests do
-        if chests[i] == main_chest_out_name then
-            table.remove(chests, i)
+    for i = 1, #storage_chests do
+        if storage_chests[i] == storage_chests.output.name then
+            table.remove(storage_chests, i)
             main_chest_out_on_modem = true
             break
         end
@@ -86,13 +99,13 @@ end
 
 -- loop through all the chests
 
-function pullItemsFromStorage(search_term, search_requested_count)
+local function pullItemsFromStorage(search_term, search_requested_count)
     local do_search = true
     local moved_items = 0
 
-    for i = 1, #chests do
+    for i = 1, #storage_chests do
         -- get the current chest
-        local current_chest = peripheral.wrap(chests[i])
+        local current_chest = peripheral.wrap(storage_chests[i])
         -- get the items in the chest
         local items = current_chest.list()
         -- loop through all the items
@@ -102,14 +115,14 @@ function pullItemsFromStorage(search_term, search_requested_count)
                 -- check how many items we need to move
                 if search_requested_count == "all" or search_requested_count == nil then
                     -- if we want to move all items, then we don't need to check how many items we need to move
-                    moved_items = moved_items + current_chest.pushItems(main_chest_out_name, current_slot)
+                    moved_items = moved_items + current_chest.pushItems(storage_chests.output.name, current_slot)
                 else
                     -- check how many items we need to move
                     local items_to_move = search_requested_count - moved_items
 
                     if items_to_move > 0 then
                         -- move the item to the main chest
-                        moved_items = moved_items + current_chest.pushItems(main_chest_out_name, current_slot, items_to_move)
+                        moved_items = moved_items + current_chest.pushItems(storage_chests.output.name, current_slot, items_to_move)
                     else
                         do_search = false
                         break
@@ -127,12 +140,12 @@ function pullItemsFromStorage(search_term, search_requested_count)
     return moved_items
 end
 
-function pushItemsToStorage(slot_to_push)
+local function pushItemsToStorage(slot_to_push)
     local moved_items = 0
 
-    for i = 1, #chests do
+    for i = 1, #storage_chests do
         -- try to push the items from the main chest to the current chest
-        local items_pushed = main_chest_in.pushItems(chests[i], slot_to_push)
+        local items_pushed = storage_chests.input.object.pushItems(storage_chests[i], slot_to_push)
         
         moved_items = moved_items + items_pushed
     end
@@ -141,11 +154,11 @@ function pushItemsToStorage(slot_to_push)
     return moved_items
 end
 
-function pushAllToStorage()
+local function pushAllToStorage()
     local transferred = 0
     local attempted_transfer = true
-    for current_slot, current_item in pairs(main_chest_in.list()) do
-        transferred = transferred + pushItemsToStorage(current_slot, current_item.count)
+    for current_slot, current_item in pairs(storage_chests.input.object.list()) do
+        transferred = transferred + pushItemsToStorage(current_slot)
         attempted_transfer = true
     end
 
@@ -157,14 +170,14 @@ function pushAllToStorage()
 end
 
 
-function getStorageItemCount(search_term)
+local function getStorageItemCount(search_term)
     local item_count = 0
 
-    item_table = {}
+    local item_table = {}
 
-    for i = 1, #chests do
+    for i = 1, #storage_chests do
         -- get the current chest
-        local current_chest = peripheral.wrap(chests[i])
+        local current_chest = peripheral.wrap(storage_chests[i])
         -- get the items in the chest
         local items = current_chest.list()
         -- loop through all the items
@@ -187,12 +200,12 @@ function getStorageItemCount(search_term)
     return item_count
 end
 
-function getInventory()
-    item_table = {}
+local function getInventory()
+    local item_table = {}
 
-    for i = 1, #chests do
+    for i = 1, #storage_chests do
         -- get the current chest
-        local current_chest = peripheral.wrap(chests[i])
+        local current_chest = peripheral.wrap(storage_chests[i])
         -- get the items in the chest
         local items = current_chest.list()
         local slots = current_chest.size()
@@ -211,7 +224,7 @@ function getInventory()
     return item_table
 end
 
-function getInventoryFromFile()
+local function getInventoryFromFile()
     local file = fs.open(INVENTORY_FILE, "r")
     if file == nil then
         return {}
@@ -221,7 +234,7 @@ function getInventoryFromFile()
     return inventory
 end
 
-function saveInventoryToCompletionFile(item_table)
+local function saveInventoryToCompletionFile(item_table)
     if item_table == nil then
         item_table = getInventory()
     end
@@ -243,9 +256,9 @@ function saveInventoryToCompletionFile(item_table)
 end
 
 
-function fullInventoryCheck()
+local function fullInventoryCheck()
     -- Dump all items within storage to a file
-    item_table = getInventory()
+    local item_table = getInventory()
 
     -- print the table
     pretty.print(pretty.pretty(item_table))
@@ -262,11 +275,11 @@ end
 
 -- public wrappers
 
-function publicPushAllToStorage()
+local function publicPushAllToStorage()
     pushAllToStorage()
 end
 
-function publicPullFromStorage(search_term, search_requested_count)
+local function publicPullFromStorage(search_term, search_requested_count)
     local item_count = getStorageItemCount(search_term)
     if type(search_requested_count) == "string" and search_requested_count == "all" then
         search_requested_count = item_count
@@ -280,7 +293,7 @@ function publicPullFromStorage(search_term, search_requested_count)
     end
 end
 
-function publicUsage()
+local function publicUsage()
     local script_name = arg[0]
     print()
     print("Usage:")
@@ -297,7 +310,7 @@ end
 -- handle autocompletion
 local completion = require "cc.completion"
 
-function complete(shell, index, argument, previous)
+local function complete(_, index, argument, previous)
     if index == 1 then
         return completion.choice(argument, {"push", "pull", "count", "inventory"}, true)
     elseif index == 2 then
@@ -329,6 +342,8 @@ shell.setCompletionFunction("storage", complete)
 -- handle commandline arguments
 
 local do_inventory_save = true
+local search_term = ""
+local search_requested_count = ""
 
 if #arg > 0 then
     if arg[1] == "push" then
