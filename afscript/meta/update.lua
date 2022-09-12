@@ -27,7 +27,7 @@ local function _update_file(script_name, options)
         end
     end
 
-    local script_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. textutils.urlEncode(script_name) .. "#" .. os.date("%H%M%S")
+    local script_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. textutils.urlEncode(script_name) .. "?abc=" .. os.date("%H%M%S")
     local script_contents = http.get(script_url).readAll()
 
     if script_contents == nil then
@@ -81,7 +81,7 @@ local function _update_library(options)
         "turtle"
     }
 
-    local tree_url = "https://api.github.com/repos/alexfayers/cc_lua_scripts/git/trees/main?recursive=1#" .. os.date("%H%M%S")
+    local tree_url = "https://api.github.com/repos/alexfayers/cc_lua_scripts/git/trees/main?recursive=1&abc=" .. os.date("%H%M%S")
     local tree = http.get(tree_url).readAll()
     local tree_json = textutils.unserialiseJSON(tree)
 
