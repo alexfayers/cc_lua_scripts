@@ -31,7 +31,7 @@ local function _update_file(script_name, options)
     local script_contents = http.get(script_url).readAll()
 
     if script_contents == nil then
-        print("Error: Could not fetch script '" .. script_name .. "'")
+        printError("Error: Could not fetch script '" .. script_name .. "'")
         return false
     end
 
