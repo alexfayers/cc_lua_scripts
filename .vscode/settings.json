@@ -8,6 +8,8 @@
         "http",
         "shell",
         "settings",
-        "printError"
+        "printError",
+        "term",
+        "colors"
     ]
 }
