@@ -1,1 +1,1 @@
-[ ] Update networked_storage to use afscript
+[ ] mining script
