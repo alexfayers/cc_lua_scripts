@@ -27,7 +27,7 @@ local function _update_file(script_name, options)
         end
     end
 
-    local script_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. script_name
+    local script_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. textutils.urlEncode(script_name)
     local script_contents = http.get(script_url).readAll()
 
     if script_contents == nil then
