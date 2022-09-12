@@ -70,7 +70,7 @@ local storage_chests = _peripherals.modem.object.getNamesRemote()
 
 local main_chest_in_on_modem = false
 for i = 1, #storage_chests do
-    if storage_chests[i] == storage_chests.input.name then
+    if storage_chests[i] == _peripherals.chest_input.name then
         table.remove(storage_chests, i)
         main_chest_in_on_modem = true
         break
@@ -82,10 +82,10 @@ if not main_chest_in_on_modem then
 end
 
 
-if storage_chests.output.name ~= storage_chests.input.name then
+if _peripherals.chest_output.name ~= _peripherals.chest_input.name then
     local main_chest_out_on_modem = false
     for i = 1, #storage_chests do
-        if storage_chests[i] == storage_chests.output.name then
+        if storage_chests[i] == _peripherals.chest_output.name then
             table.remove(storage_chests, i)
             main_chest_out_on_modem = true
             break
@@ -115,14 +115,14 @@ local function pullItemsFromStorage(search_term, search_requested_count)
                 -- check how many items we need to move
                 if search_requested_count == "all" or search_requested_count == nil then
                     -- if we want to move all items, then we don't need to check how many items we need to move
-                    moved_items = moved_items + current_chest.pushItems(storage_chests.output.name, current_slot)
+                    moved_items = moved_items + current_chest.pushItems(_peripherals.chest_output.name, current_slot)
                 else
                     -- check how many items we need to move
                     local items_to_move = search_requested_count - moved_items
 
                     if items_to_move > 0 then
                         -- move the item to the main chest
-                        moved_items = moved_items + current_chest.pushItems(storage_chests.output.name, current_slot, items_to_move)
+                        moved_items = moved_items + current_chest.pushItems(_peripherals.chest_output.name, current_slot, items_to_move)
                     else
                         do_search = false
                         break
@@ -145,7 +145,7 @@ local function pushItemsToStorage(slot_to_push)
 
     for i = 1, #storage_chests do
         -- try to push the items from the main chest to the current chest
-        local items_pushed = storage_chests.input.object.pushItems(storage_chests[i], slot_to_push)
+        local items_pushed = _peripherals.chest_input.object.pushItems(storage_chests[i], slot_to_push)
         
         moved_items = moved_items + items_pushed
     end
@@ -157,7 +157,7 @@ end
 local function pushAllToStorage()
     local transferred = 0
     local attempted_transfer = true
-    for current_slot, current_item in pairs(storage_chests.input.object.list()) do
+    for current_slot, current_item in pairs(_peripherals.chest_input.object.list()) do
         transferred = transferred + pushItemsToStorage(current_slot)
         attempted_transfer = true
     end
