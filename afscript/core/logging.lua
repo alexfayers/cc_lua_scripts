@@ -1,5 +1,11 @@
 -- Logging functions
 
+-- imports
+
+local strings = require("cc.strings")
+
+-- constants
+
 local LEVEL = {
     DEBUG = 0,
     INFO = 1,
@@ -31,13 +37,43 @@ local function _build_filename(logger_name)
     return "logs/" .. logger_name .. ".log"
 end
 
+---Write a line of text to the console in a specified color
+---@param text string The text to write
+---@param color number The color to write the text in
+local function _write_line_color(text, color)
+    term.setTextColor(color)
+    term.write(text)
+    term.setTextColor(colors.white)
+end
+
+---Write a long amount of text across multiple lines in a specified color
+---@param text string The text to write
+---@param color number The color to write the text in
+local function _print_color(text, color)
+    local x_size, y_size = term.getSize()
+    local lines = strings.wrap(text, x_size)
+    -- reset the cursor position
+    term.setCursorPos(1, y_size)
+
+    for i = 1, #lines do
+        -- write the line
+        _write_line_color(lines[i], color)
+
+        -- reset the cursor position
+        term.setCursorPos(1, y_size)
+
+        -- scroll the terminal up
+        term.scroll(1)
+    end
+end
+
 ---Log a message to the console and to a file (at debug level)
 ---@param msg string The message to log
 ---@param log_filename string The file to log to
 local function _debug(level_variable, msg, log_filename)
     if level_variable <= LEVEL.DEBUG then
         msg = _format_log(LEVEL.DEBUG, msg)
-        print(msg)
+        _print_color(msg, colors.gray)
         local file = fs.open(log_filename, "a")
         file.writeLine(msg)
         file.close()
@@ -49,10 +85,11 @@ end
 ---@param log_filename string The file to log to
 local function _info(level_variable, msg, log_filename)
     if level_variable <= LEVEL.INFO then
-        print(_format_log(LEVEL.INFO, msg))
+        msg = _format_log(LEVEL.INFO, msg)
+        _print_color(msg, colors.white)
         if log_filename ~= nil then
             local file = fs.open(log_filename, "a")
-            file.writeLine(_format_log(LEVEL.INFO, msg))
+            file.writeLine(msg)
             file.close()
         end
     end
@@ -65,7 +102,7 @@ end
 local function _warn(level_variable, msg, log_filename)
     if level_variable <= LEVEL.WARN then
         msg = _format_log(LEVEL.WARN, msg)
-        print(msg)
+        _print_color(msg, colors.yellow)
         local file = fs.open(log_filename, "a")
         file.writeLine(msg)
         file.close()
@@ -78,7 +115,7 @@ end
 local function _error(level_variable, msg, log_filename)
     if level_variable <= LEVEL.ERROR then
         msg = _format_log(LEVEL.ERROR, msg)
-        print(msg)
+        _print_color(msg, colors.red)
         local file = fs.open(log_filename, "a")
         file.writeLine(msg)
         file.close()
@@ -122,5 +159,6 @@ end
 
 return {
     new = _new,
+    print_color = _print_color,
     LEVEL = LEVEL
 }
