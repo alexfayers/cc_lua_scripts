@@ -319,7 +319,7 @@ local function mine()
             else
                 logger.info("No ore found in this branch")
 
-                if inventory.selectPlaceable() then  -- we mined a placeable block, so place it
+                if _selectPlaceable() then  -- we mined a placeable block, so place it
                     turtle.turnAround()
                     turtle.place()
                     turtle.turnAround()
