@@ -147,9 +147,8 @@ local function mine()
 
                 -- at end of branch if there's not enough light, slap a torch down
                 if branch_position == branch_length - 1 and do_place_torches and current_light_level <= -1 then
-                    local did_place = false
                     if inventory.select("minecraft:torch") > 0 then
-                        did_place = turtle.placeUp()
+                        turtle.placeUp()
                         current_light_level = torch_light
                     else
                         do_place_torches = false
