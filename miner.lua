@@ -56,7 +56,7 @@ local current_light_level = 0
 
 local function _mineNotify(title, message)
     notify.join(
-        "CC: Miner #" .. os.getComputerID() .. title,
+        "CC: Miner #" .. os.getComputerID() .. " " .. title,
         message
     )
 end
