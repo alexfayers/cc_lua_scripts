@@ -366,6 +366,16 @@ local function mine()
                 end
             end
 
+            -- if the branch length is odd, we need to move down back to the floor
+            if branch_length % 2 == 1 then
+                if _mineIfOre(turtle.inspectDown, turtle.digDown, true) then
+                    branch_has_ore = true
+                else
+                    turtle.digDown()
+                end
+                movement.down()
+            end
+
             -- go back to main branch
             movement.turnAround()
 
