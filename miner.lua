@@ -42,7 +42,7 @@ local branch_spacing = 3
 -- number of blocks to mine in each branch
 local branch_length = 47
 -- total number of pairs of branches
-local branch_pair_count = 4
+local branch_pair_count = 1
 -- check if enough fuel before mining
 local prerun_fuel_check = true
 -- whether to place torches in the stripmine
