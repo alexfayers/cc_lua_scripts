@@ -228,7 +228,7 @@ local function _mineFallingBlocks()
                     if turtle.dig() then
                         mined_blocks = mined_blocks + 1
                     end
-                    os.sleep(0.5)
+                    -- os.sleep(0.5)
                 end
             end
         else
