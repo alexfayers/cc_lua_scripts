@@ -7,6 +7,7 @@ local movement = require("afscript.turtle.movement")
 local inventory = require("afscript.turtle.inventory")
 local state = require("afscript.core.state")
 local utils = require("afscript.turtle.utils")
+local notify = require("afscript.core.notify")
 
 -- movement.logger.level = logging.LEVEL.DEBUG
 
@@ -51,6 +52,14 @@ local do_place_torches = true
 local torch_light = 12
 -- current light level on the turtle
 local current_light_level = 0
+
+
+local function _mineNotify(title, message)
+    notify.join(
+        "CC: Miner #" .. os.getComputerID() .. title,
+        message
+    )
+end
 
 
 local function _getFuelRequired(branch_spacing, branch_length, branch_pair_count)
@@ -223,6 +232,11 @@ local function mine()
 
     -- mine
 
+    _mineNotify(
+        "Starting mine",
+        "Starting mine with branch spacing " .. branch_spacing .. ", branch length " .. branch_length .. ", and branch pair count " .. branch_pair_count
+    )
+
     for _ = 1, branch_pair_count do
         -- continue main branch
         logger.info("Continuing main branch")
@@ -253,6 +267,10 @@ local function mine()
 
                 if not _fuelCheckForward() then
                     -- we ran out of fuel and returned to home
+                    _mineNotify(
+                        "Out of fuel",
+                        "Ran out of fuel and returned to " .. _mine_state.home_location.x .. ", " .. _mine_state.home_location.y .. ", " .. _mine_state.home_location.z
+                    )
                     return
                 end
                 if _mineAdjacent() then  -- mine any ore blocks on the bottom layer
@@ -331,6 +349,11 @@ local function mine()
 
             if branch_has_ore then
                 logger.info("Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+
+                _mineNotify(
+                    "Found ore",
+                    "Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z
+                )
             else
                 logger.info("No ore found in this branch")
 
@@ -348,6 +371,13 @@ local function mine()
         -- face forward again to prepare for next branch pair
         movement.turnRight()
     end
+
+    logger.info("Completed mining")
+
+    _mineNotify(
+        "Completed mining",
+        "Completed mining at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z
+    )
 end
 
 mine()
