@@ -220,8 +220,6 @@ local function _mineFallingBlocks()
 
     local mined_blocks = 0
 
-    logger.debug("Starting gravel mine")
-
     while true do
         local is_block, block = turtle.inspect()
         if is_block then
