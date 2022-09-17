@@ -54,6 +54,7 @@ local current_light_level = 0
 
 
 local function _getFuelRequired(branch_spacing, branch_length, branch_pair_count)
+    -- TODO: check this calculation lol
     return (
         (
             branch_spacing + 1
