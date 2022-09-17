@@ -220,6 +220,24 @@ local function _moveTo(x, y, z)
     return true
 end
 
+
+---Calculate the distance between two points
+---@param x1 number The x coordinate of the first point
+---@param y1 number The y coordinate of the first point
+---@param z1 number The z coordinate of the first point
+---@param x2 number The x coordinate of the second point
+---@param y2 number The y coordinate of the second point
+---@param z2 number The z coordinate of the second point
+---@return number _ The distance between the two points
+local function _distance(x1, y1, z1, x2, y2, z2)
+    return math.sqrt(
+        ((x2 - x1) ^ 2) +
+        ((y2 - y1) ^ 2) +
+        ((z2 - z1) ^ 2)
+    )
+end
+
+
 return {
     turnLeft = _turnLeft,
     turnRight = _turnRight,
@@ -229,6 +247,7 @@ return {
     down = _down,
     face = _face,
     moveTo = _moveTo,
+    distance = _distance,
     current_position = _current_position,
     logger = logger,
 }
