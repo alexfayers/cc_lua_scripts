@@ -274,4 +274,4 @@ local function mine()
     end
 end
 
-mine()
+_mineAdjacent()
