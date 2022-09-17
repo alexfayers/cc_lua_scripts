@@ -40,7 +40,7 @@ local _bad_blocks = {
 -- blocks to leave between each branch
 local branch_spacing = 3
 -- number of blocks to mine in each branch
-local branch_length = 47
+local branch_length = 20 -- 47
 -- total number of pairs of branches
 local branch_pair_count = 1
 -- check if enough fuel before mining
