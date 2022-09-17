@@ -54,9 +54,9 @@ local _notable_ores = {
 -- blocks to leave between each branch
 local branch_spacing = 3
 -- number of blocks to mine in each branch
-local branch_length = 20 -- 47
+local branch_length = 47
 -- total number of pairs of branches
-local branch_pair_count = 1
+local branch_pair_count = 2
 -- check if enough fuel before mining
 local prerun_fuel_check = true
 -- whether to place torches in the stripmine
