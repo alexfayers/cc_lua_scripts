@@ -127,8 +127,8 @@ end
 
 ---Mine ore and store it's location
 local function _mineIfOre(inspect_action, mine_action)
-    local block = inspect_action()
-    if block and block.name.find("ore") then
+    local is_block, block = inspect_action()
+    if is_block and string.find(block.name, "ore") then
         table.insert(_mine_state._ore_locations, {
             x = movement.current_position.x,
             y = movement.current_position.y,
