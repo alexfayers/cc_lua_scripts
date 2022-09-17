@@ -46,6 +46,36 @@ local function _getFuelRequired(branch_spacing, branch_length, branch_pair_count
 end
 
 
+---Check if the turtle has enough fuel to get back home
+---and return to the main branch if it does not, otherwise move forward
+local function _fuelCheckForward()
+    local fuel_required = movement.distance(
+        movement.current_position.x,
+        movement.current_position.y,
+        movement.current_position.z,
+        _mine_state.home_location.x,
+        _mine_state.home_location.y,
+        _mine_state.home_location.z
+    )
+    if turtle.getFuelLevel() < fuel_required then
+        logger.warn("Not enough fuel to mine this branch, refueling")
+        local did_refuel = (
+            utils.refuel("minecraft:coal", fuel_required)
+            or utils.refuel("minecraft:charcoal", fuel_required)
+        )
+
+        if not did_refuel then
+            logger.error("Could not refuel, heading home")
+            movement.moveTo(_mine_state.home_location.x, _mine_state.home_location.y, _mine_state.home_location.z)
+            return false
+        end
+    end
+
+    return movement.forward()
+end
+
+
+
 local function mine()
     -- blocks to leave between each branch
     local branch_spacing = 3
