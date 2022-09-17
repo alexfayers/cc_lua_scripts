@@ -59,7 +59,7 @@ local function _getFuelRequired(branch_spacing, branch_length, branch_pair_count
             branch_spacing + 1
         )  -- spacing between branches, plus 1 for the connection between branches
         + (
-            branch_length * 4 + 1
+            branch_length * 4 * 2 + 1
         )  -- length of mining each branch and going back to main
     ) * branch_pair_count
 end
