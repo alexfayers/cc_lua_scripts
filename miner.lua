@@ -36,6 +36,22 @@ local _bad_blocks = {
 }
 
 
+-- blocks to leave between each branch
+local branch_spacing = 3
+-- number of blocks to mine in each branch
+local branch_length = 47
+-- total number of pairs of branches
+local branch_pair_count = 4
+-- check if enough fuel before mining
+local prerun_fuel_check = true
+-- whether to place torches in the stripmine
+local do_place_torches = true
+-- amount of blocks that torch light travels
+local torch_light = 12
+-- current light level on the turtle
+local current_light_level = 0
+
+
 local function _getFuelRequired(branch_spacing, branch_length, branch_pair_count)
     return (
         (
@@ -77,29 +93,44 @@ local function _fuelCheckForward()
 end
 
 
+---Dump bad blocks
+local function _dumpBadBlocks()
+    for _, bad_block in ipairs(_bad_blocks) do
+        local did_drop = true
+        local dumped_count = 0
+        while did_drop do
+            dumped_count = inventory.dump(bad_block)
+            if dumped_count > 0 then
+                logger.info("Dropped " .. dumped_count .. " " .. bad_block)
+            end
+            did_drop = dumped_count > 0
+        end
+    end
+end
+
+
+---Place a torch if needed
+local function _placeTorchIfNeeded()
+    if inventory.select("minecraft:torch") > 0 then
+        if turtle.placeUp() then
+            logger.debug("Placed torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            current_light_level = torch_light
+        else
+            logger.debug("Could not place torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+        end
+    else
+        do_place_torches = false
+    end
+end
+
 
 local function mine()
-    -- blocks to leave between each branch
-    local branch_spacing = 3
-    -- number of blocks to mine in each branch
-    local branch_length = 47
-    -- total number of pairs of branches
-    local branch_pair_count = 4
-    -- check if enough fuel before mining
-    local prerun_fuel_check = true
-    -- whether to place torches in the stripmine
-    local do_place_torches = true
-    -- amount of blocks that torch light travels
-    local torch_light = 12
-    -- current light level on the turtle
-    local current_light_level = 0
-
     -- fuel check
     local required_fuel = _getFuelRequired(branch_spacing, branch_length, branch_pair_count)
     if prerun_fuel_check then
         local fuel_level = turtle.getFuelLevel()
         if fuel_level < required_fuel then
-            logger.error("Not enough fuel to complete trip. Need %d more.", required_fuel - fuel_level)
+            logger.error("Not enough fuel to complete trip. Need " .. required_fuel - fuel_level .. " more.")
             return
         end
     end
@@ -109,7 +140,7 @@ local function mine()
     local current_torches = inventory.count("minecraft:torch")
 
     if current_torches < required_torches then
-        logger.error("Not enough torches to complete trip. Need %d more.", required_torches - current_torches)
+        logger.error("Not enough torches to complete trip. Need " .. required_torches - current_torches .. " more.")
         return
     end
 
@@ -121,7 +152,6 @@ local function mine()
         for _ = 1, branch_spacing + 1 do
             turtle.dig()
             movement.forward()
-
             turtle.digUp()
         end
 
@@ -131,15 +161,11 @@ local function mine()
         -- mine left branch
         movement.turnLeft()
         for branch_side = 1, 2 do
-            if branch_side == 1 then
-                logger.info("Mining left branch")
-            else
-                logger.info("Mining right branch")
-            end
+            if branch_side == 1 then logger.info("Mining left branch") else logger.info("Mining right branch") end
 
             for _ = 1, branch_length do
                 turtle.dig()
-                if not _fuelCheckForward() then  -- check fuel before moving forward
+                if not _fuelCheckForward() then
                     -- we ran out of fuel and returned to home
                     return
                 end
@@ -151,19 +177,7 @@ local function mine()
 
             -- dump inventory of trash
             logger.info("Dumping trash")
-
-            for bad_block_i = 1, #_bad_blocks do
-                local bad_block = _bad_blocks[bad_block_i]
-                local did_drop = true
-                local dumped_count = 0
-                while did_drop do
-                    dumped_count = inventory.dump(bad_block)
-                    if dumped_count > 0 then
-                        logger.info("Dropped " .. dumped_count .. " " .. bad_block)
-                    end
-                    did_drop = dumped_count > 0
-                end
-            end
+            _dumpBadBlocks()
 
             logger.info("Heading back to main branch")
 
@@ -172,26 +186,15 @@ local function mine()
             current_light_level = torch_light
             for branch_position = 1, branch_length do
                 -- place torches if necessary
-                local target_light = 0
-                if not first_torch then
-                    target_light = -(torch_light + 1)
-                end
+                local target_light
+                if not first_torch then target_light = -(torch_light + 1) else target_light = 0 end
 
                 if do_place_torches and current_light_level <= target_light then
                     if first_torch then
                         first_torch = false
                     end
 
-                    if inventory.select("minecraft:torch") > 0 then
-                        if turtle.placeUp() then
-                            logger.debug("Placed torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
-                            current_light_level = torch_light
-                        else
-                            logger.debug("Could not place torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
-                        end
-                    else
-                        do_place_torches = false
-                    end
+                    _placeTorchIfNeeded()
                 end
 
                 turtle.dig()
@@ -202,16 +205,7 @@ local function mine()
 
                 -- at end of branch if there's not enough light, slap a torch down
                 if branch_position == branch_length - 1 and do_place_torches and current_light_level <= -1 then
-                    if inventory.select("minecraft:torch") > 0 then
-                        if turtle.placeUp() then
-                            logger.debug("Placed torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z .. " due to low light at end of branch")
-                            current_light_level = torch_light
-                        else
-                            logger.debug("Could not place torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
-                        end
-                    else
-                        do_place_torches = false
-                    end
+                    _placeTorchIfNeeded()
                 end
             end
 
