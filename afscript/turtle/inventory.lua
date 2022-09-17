@@ -51,9 +51,32 @@ local function _dump(item_name)
 end
 
 
+---Sort the turtle's inventory by attempting to place items in each slot
+---Into every slot. Sorting is complete when no items are moved.
+local function _sort()
+    local sorted = false
+    while not sorted do
+        sorted = true
+        for i = 1, 16 do
+            local item = turtle.getItemDetail(i)
+            if item ~= nil then
+                turtle.select(i)
+                for j = 1, 16 do
+                    if i ~= j then
+                        turtle.transferTo(j)
+                        sorted = false
+                    end
+                end
+            end
+        end
+    end
+end
+
+
 return {
     select = _select,
     count = _count,
     dump = _dump,
+    sort = _sort,
     logger = logger,
 }
