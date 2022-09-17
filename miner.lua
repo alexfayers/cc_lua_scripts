@@ -223,13 +223,18 @@ local function _mineFallingBlocks()
     while true do
         local is_block, block = turtle.inspect()
         if is_block then
+            local is_falling_block = false
             for _, falling_block in ipairs(falling_blocks) do
                 if block.name == falling_block then
+                    is_falling_block = true
                     if turtle.dig() then
                         mined_blocks = mined_blocks + 1
                         os.sleep(0.5)
                     end
                 end
+            end
+            if not is_falling_block then
+                break
             end
         else
             break
