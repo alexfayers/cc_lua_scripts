@@ -242,7 +242,13 @@ local function mine()
             if branch_side == 1 then logger.info("Mining left branch") else logger.info("Mining right branch") end
 
             for _ = 1, branch_length do
-                turtle.dig()
+                -- mine in front
+                if _mineIfOre(turtle.inspect, turtle.dig, true) then
+                    branch_has_ore = true
+                else
+                    turtle.dig()
+                end
+
                 if not _fuelCheckForward() then
                     -- we ran out of fuel and returned to home
                     return
@@ -251,7 +257,13 @@ local function mine()
                     branch_has_ore = true
                 end
 
-                turtle.digUp()  -- mine the layer above
+                -- mine the layer above
+                if _mineIfOre(turtle.inspectUp, turtle.digUp, true) then
+                    branch_has_ore = true
+                else
+                    turtle.digUp()
+                end
+
                 turtle.up()
                 if _mineAdjacent() then  -- mine any ore blocks on the top layer
                     branch_has_ore = true
