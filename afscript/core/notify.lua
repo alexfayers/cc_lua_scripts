@@ -41,13 +41,13 @@ local function _join(title, message)
         return false
     end
 
-    local success, data = http.post(
+    local res = http.get(
         "https://joinjoaomgcd.appspot.com/_ah/api/messaging/v1/sendPush?apikey=" .. textutils.urlEncode(api_key) ..
         "&deviceId=" .. textutils.urlEncode(device_id) ..
         "&title=" .. textutils.urlEncode(title) ..
         "&text=" .. textutils.urlEncode(message)
     )
-    if success then
+    if res.getResponseCode() == 200 then
         logger.debug("JOIN: Sent notification: '" .. title .. "' - '" .. message .. "'")
         return true
     else
