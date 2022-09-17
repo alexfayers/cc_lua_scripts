@@ -2,6 +2,7 @@
 
 local logging = require("afscript.core.logging")
 local inventory = require("afscript.turtle.inventory")
+local notify = require("afscript.core.notify")
 
 local logger = logging.new("turtle.utils")
 
@@ -30,10 +31,12 @@ local function _pullFromChestBelow(item_name)
         if _checkItemInChest(chest, item_name) then
             return turtle.suckDown()
         else
-            logger.warn("No " .. item_name .. " in chest!") -- TODO: notify
+            logger.warn("No " .. item_name .. " in chest!")
+            notify.join("Chest pull failed", "No " .. item_name .. " in chest!")
         end
     else
-        logger.warn("No chest below turtle!") -- TODO: notify
+        logger.warn("No chest below turtle!")
+        notify.join("Chest pull failed", "No chest below turtle!")
     end
     return false
 end
@@ -48,7 +51,8 @@ local function _refuel(fuel_name, fuel_threshold)
         if inventory.select(fuel_name) > 0 then
             turtle.refuel(1)
         else
-            logger.warn("Ran out of fuel locally - trying chest!") -- TODO: notify
+            logger.warn("Ran out of fuel locally - trying chest!")
+            notify.join("Refuel failed", "Ran out of fuel locally - trying chest!")
             if not _pullFromChestBelow(fuel_name) then
                 logger.error("Ran out of fuel!")
                 return false
