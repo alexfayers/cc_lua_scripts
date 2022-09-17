@@ -183,6 +183,23 @@ local function _mineAdjacent()
 end
 
 
+---Select the first placeable block in the inventory
+---@return boolean
+local function _selectPlaceable()
+    local placeables = {
+        "minecraft:dirt",
+        "minecraft:cobblestone",
+        "minecraft:cobbled_deepslate"
+    }
+    for _, placeable in ipairs(placeables) do
+        if inventory.select(placeable) > 0 then
+            return true
+        end
+    end
+    return false
+end
+
+
 local function mine()
     -- fuel check
     local required_fuel = _getFuelRequired(branch_spacing, branch_length, branch_pair_count)
@@ -274,8 +291,14 @@ local function mine()
                 current_light_level = current_light_level - 1
 
                 -- at end of branch if there's not enough light, slap a torch down
-                if branch_position == branch_length - 1 and do_place_torches and current_light_level <= -1 then
-                    _placeTorchIfNeeded()
+                if branch_position == branch_length - 1 then
+                    if not branch_has_ore then
+                        -- mine a block ready to block off the end of the branch because there's no ore
+                        turtle.digDown()
+                    end
+                    if do_place_torches and current_light_level <= target_light then
+                        _placeTorchIfNeeded()
+                    end
                 end
             end
 
@@ -283,13 +306,15 @@ local function mine()
                 logger.info("Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
             else
                 logger.info("No ore found in this branch")
+
+                if inventory.selectPlaceable() then  -- we mined a placeable block, so place it
+                    turtle.turnAround()
+                    turtle.place()
+                    turtle.turnAround()
+                end
             end
 
-            if branch_side == 1 then
-                logger.info("Completed left branch")
-            else
-                logger.info("Completed right branch")
-            end
+            if branch_side == 1 then logger.info("Completed left branch") else logger.info("Completed right branch") end
         end
 
         logger.info("Completed branch pair")
