@@ -38,6 +38,18 @@ local _bad_blocks = {
     "minecraft:granite",
 }
 
+-- ores that we want to notifiy about
+local _notable_ores = {
+    "coal",
+    "iron",
+    -- "gold",
+    "diamond",
+    "emerald",
+    -- "lapis",
+    -- "redstone",
+    -- "ancient_debris",
+}
+
 
 -- blocks to leave between each branch
 local branch_spacing = 3
@@ -151,6 +163,13 @@ local function _mineIfOre(inspect_action, mine_action, do_mine)
             name = block.name
         })
         state.save(_mine_state, STATEFILE)
+
+        for _, notable_ore in ipairs(_notable_ores) do
+            if string.find(block.name, notable_ore) then
+                _mineNotify("Found " .. notable_ore, "Found " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            end
+            logger.info("Found " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+        end
 
         if do_mine then
             if mine_action() then
