@@ -7,6 +7,7 @@ local movement = require("afscript.turtle.movement")
 local inventory = require("afscript.turtle.inventory")
 local state = require("afscript.core.state")
 local utils = require("afscript.turtle.utils")
+local notify = require("afscript.core.notify")
 
 movement.logger.level = logging.LEVEL.DEBUG
 
@@ -33,6 +34,13 @@ local _farm_state = state.load(STATEFILE) or {
     always_plant = true
 }
 
+local function _notify(title, message)
+    notify.join(
+        "CC: Farmer #" .. os.getComputerID() .. " " .. title,
+        message
+    )
+end
+
 local function harvest()
     -- check if the turtle is on top of a fully grown wheat
 
@@ -52,9 +60,12 @@ local function plant()
 end
 
 local function harvestAndPlant()
-    if harvest() == true or _farm_state.always_plant == true then
+    local did_harvest = harvest()
+    if did_harvest == true or _farm_state.always_plant == true then
         plant()
     end
+
+    return did_harvest
 end
 
 local function deposit()
@@ -84,12 +95,15 @@ local function depositIfChest()
 end
 
 local function farm()
+    local harvest_count = 0
     movement.moveTo(0, 0, 0)
     movement.face("north")
 
     -- do the first plant
     movement.forward()
-    harvestAndPlant()
+    if harvestAndPlant() then 
+        harvest_count = harvest_count + 1
+    end
 
     -- do the whole farm
     for i = 1, farm_width do
@@ -97,7 +111,9 @@ local function farm()
             if i ~= farm_width or j ~= (farm_height - 1) then
                 movement.forward()
             end
-            harvestAndPlant()
+            if harvestAndPlant() then 
+                harvest_count = harvest_count + 1
+            end
         end
         if i ~= farm_width then
             if i % 2 == 0 then
@@ -112,10 +128,14 @@ local function farm()
         else
             movement.forward()
         end
-        harvestAndPlant()
+        if harvestAndPlant() then 
+            harvest_count = harvest_count + 1
+        end
     end
     movement.moveTo(0, 0, 0)
     movement.face("north")
+
+    _notify("Harvested", harvest_count .. " wheat harvested")
 end
 
 local function main()
