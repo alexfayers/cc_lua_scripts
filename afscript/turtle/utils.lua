@@ -32,6 +32,8 @@ local function _pullFromChestBelow(item_name)
         else
             logger.warn("No " .. item_name .. " in chest!") -- TODO: notify
         end
+    else
+        logger.warn("No chest below turtle!") -- TODO: notify
     end
     return false
 end
