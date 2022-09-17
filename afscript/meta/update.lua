@@ -1,5 +1,21 @@
 -- Bootloader type script to fetch library files from github
 
+-- import logging if we already have it
+
+local logging = require("afscript.core.logging")
+local logger = nil
+if logging then
+    logger = logging.new("afscript.meta.update")
+end
+
+settings.define("afscript.update.github_token", {
+    description = "Github token for updating library",
+    default = "",
+    type = "string"
+})
+
+local github_token = settings.get("afscript.update.github_token")
+
 ---Update an arbitrary script from the repo
 ---@param script_name string The name of the script to update
 ---@param options table|nil The options table
@@ -28,10 +44,23 @@ local function _update_file(script_name, options)
     end
 
     local script_url = "https://raw.githubusercontent.com/alexfayers/cc_lua_scripts/main/" .. textutils.urlEncode(script_name) .. "?abc=" .. os.date("%H%M%S")
-    local script_contents = http.get(script_url).readAll()
+
+    local res
+    if github_token ~= "" then
+        res = http.get(script_url, {
+            Authorization = "token " .. github_token}
+        )
+    else
+        res = http.get(script_url)
+    end
+    local script_contents = res.readAll()
 
     if script_contents == nil then
-        printError("Error: Could not fetch script '" .. script_name .. "'")
+        if logger then
+            logger.error("Could not fetch script '" .. script_name .. "'")
+        else
+            printError("Error: Could not fetch script '" .. script_name .. "'")
+        end
         return false
     end
 
@@ -43,7 +72,11 @@ local function _update_file(script_name, options)
 
         if local_contents == script_contents then
             if options.verbose then
-                print("Updater: '" .. script_name .. "' is already up to date")
+                if logger then
+                    logger.debug("Script '" .. script_name .. "' is up to date")
+                else
+                    print("Script '" .. script_name .. "' is up to date")
+                end
             end
             return false
         end
@@ -60,7 +93,11 @@ local function _update_file(script_name, options)
     file.close()    
 
     if options.verbose then
-        print("Updater: Updated '" .. script_name .. "'")
+        if logger then
+            logger.success("Updated script '" .. script_name .. "'")
+        else
+            print("Updated script '" .. script_name .. "'")
+        end
     end
 
     return true
@@ -82,11 +119,24 @@ local function _update_library(options)
     }
 
     local tree_url = "https://api.github.com/repos/alexfayers/cc_lua_scripts/git/trees/main?recursive=1&abc=" .. os.date("%H%M%S")
-    local tree = http.get(tree_url).readAll()
+
+    local res
+    if github_token ~= "" then
+        res = http.get(tree_url, {
+            Authorization = "token " .. github_token}
+        )
+    else
+        res = http.get(tree_url)
+    end
+    local tree = res.readAll()
     local tree_json = textutils.unserialiseJSON(tree)
 
     for submodule_i = 1, #submodules do
-        print("Updater: Updating '" .. submodules[submodule_i] .. "'...")
+        if logger then
+            logger.info("Updating '" .. submodules[submodule_i] .. "'")
+        else
+            print("Updating '" .. submodules[submodule_i] .. "'")
+        end
         local did_update = false
         for _, file in ipairs(tree_json.tree) do
             if file.path:match("^afscript/" .. submodules[submodule_i] .. "/.+") then
@@ -102,12 +152,25 @@ local function _update_library(options)
         end
 
         if not did_update then
-            print("  '" .. submodules[submodule_i] .. "' is already up to date")
+            if logger then
+                logger.debug("No updates for '" .. submodules[submodule_i] .. "'")
+            else
+                print("  - '" .. submodules[submodule_i] .. "' is already up to date")
+            end
         else
-            print("  Updated '" .. submodules[submodule_i] .. "'")
+            if logger then
+                logger.success("Updated '" .. submodules[submodule_i] .. "'")
+            else
+                print("  + Updated '" .. submodules[submodule_i] .. "'")
+            end
         end
     end
-    print("Updater: Done!")
+
+    if logger then
+        logger.success("Updated library")
+    else
+        print("Updater: Done")
+    end
 end
 
 return {
