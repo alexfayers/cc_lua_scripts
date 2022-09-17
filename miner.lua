@@ -276,6 +276,7 @@ local function mine()
         -- continue main branch
         logger.info("Continuing main branch")
         for _ = 1, branch_spacing + 1 do
+            _mineFallingBlocks()
             turtle.dig()
             movement.forward()
             turtle.digUp()
@@ -294,6 +295,7 @@ local function mine()
 
             for branch_length_position = 1, branch_length do
                 -- mine in front
+                _mineFallingBlocks()
                 if _mineIfOre(turtle.inspect, turtle.dig, true) then
                     branch_has_ore = true
                 else
@@ -364,6 +366,7 @@ local function mine()
                     _placeTorchIfNeeded()
                 end
 
+                _mineFallingBlocks()
                 turtle.dig()
                 movement.forward()  -- just move forward, no need to check fuel since we're already heading to the safe spot
                 turtle.digUp()
@@ -415,4 +418,4 @@ local function mine()
     )
 end
 
-_mineFallingBlocks()
+mine()
