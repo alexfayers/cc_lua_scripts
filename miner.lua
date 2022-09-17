@@ -221,7 +221,12 @@ local function mine()
                     -- we ran out of fuel and returned to home
                     return
                 end
-                turtle.digUp()
+                _mineAdjacent()  -- mine any ore blocks on the bottom layer
+
+                turtle.digUp()  -- mine the layer above
+                turtle.up()
+                _mineAdjacent()  -- mine any ore blocks on the top layer
+                turtle.down()
             end
 
             -- go back to main branch
@@ -274,4 +279,4 @@ local function mine()
     end
 end
 
-_mineAdjacent()
+mine()
