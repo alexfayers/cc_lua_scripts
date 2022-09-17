@@ -8,9 +8,11 @@ local inventory = require("afscript.turtle.inventory")
 local state = require("afscript.core.state")
 local utils = require("afscript.turtle.utils")
 
-movement.logger.level = logging.LEVEL.DEBUG
+-- movement.logger.level = logging.LEVEL.DEBUG
 
 local logger = logging.new("stripmine")
+
+logger.level = logging.LEVEL.DEBUG
 
 local STATEFILE = ".stripmine.state"
 
@@ -115,6 +117,7 @@ local function mine()
 
     for _ = 1, branch_pair_count do
         -- continue main branch
+        logger.info("Continuing main branch")
         for _ = 1, branch_spacing + 1 do
             turtle.dig()
             movement.forward()
@@ -127,7 +130,13 @@ local function mine()
 
         -- mine left branch
         movement.turnLeft()
-        for _ = 1, 2 do
+        for branch_side = 1, 2 do
+            if branch_side == 1 then
+                logger.info("Mining left branch")
+            else
+                logger.info("Mining right branch")
+            end
+
             for _ = 1, branch_length do
                 turtle.dig()
                 if not _fuelCheckForward() then  -- check fuel before moving forward
@@ -141,6 +150,8 @@ local function mine()
             movement.turnAround()
 
             -- dump inventory of trash
+            logger.info("Dumping trash")
+
             for bad_block_i = 1, #_bad_blocks do
                 local bad_block = _bad_blocks[bad_block_i]
                 local did_drop = true
@@ -148,11 +159,13 @@ local function mine()
                 while did_drop do
                     dumped_count = inventory.dump(bad_block)
                     if dumped_count > 0 then
-                        logger.debug("Dropped " .. dumped_count .. " " .. bad_block)
+                        logger.info("Dropped " .. dumped_count .. " " .. bad_block)
                     end
                     did_drop = dumped_count > 0
                 end
             end
+
+            logger.info("Heading back to main branch")
 
             -- start lighting and heading back
             local first_torch = true
@@ -170,30 +183,46 @@ local function mine()
                     end
 
                     if inventory.select("minecraft:torch") > 0 then
-                        turtle.placeUp()
-                        current_light_level = torch_light
+                        if turtle.placeUp() then
+                            logger.debug("Placed torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+                            current_light_level = torch_light
+                        else
+                            logger.debug("Could not place torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+                        end
                     else
                         do_place_torches = false
                     end
                 end
 
                 turtle.dig()
-                movement.forward()  -- just move forward, no need to check fuel since we're heading to a safe spot
+                movement.forward()  -- just move forward, no need to check fuel since we're already heading to the safe spot
+                turtle.digUp()
 
                 current_light_level = current_light_level - 1
 
                 -- at end of branch if there's not enough light, slap a torch down
                 if branch_position == branch_length - 1 and do_place_torches and current_light_level <= -1 then
                     if inventory.select("minecraft:torch") > 0 then
-                        turtle.placeUp()
-                        current_light_level = torch_light
+                        if turtle.placeUp() then
+                            logger.debug("Placed torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z .. " due to low light at end of branch")
+                            current_light_level = torch_light
+                        else
+                            logger.debug("Could not place torch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+                        end
                     else
                         do_place_torches = false
                     end
                 end
             end
+
+            if branch_side == 1 then
+                logger.info("Completed left branch")
+            else
+                logger.info("Completed right branch")
+            end
         end
 
+        logger.info("Completed branch pair")
         -- face forward again to prepare for next branch pair
         movement.turnRight()
     end
