@@ -30,6 +30,7 @@ local _mine_state = state.load(STATEFILE) or {
 local _bad_blocks = {
     "minecraft:dirt",
     "minecraft:cobblestone",
+    "minecraft:cobbled_deepslate",
     "minecraft:gravel",
     "minecraft:tuff",
     "minecraft:andesite",
