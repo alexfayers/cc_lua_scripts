@@ -126,23 +126,31 @@ end
 
 
 ---Mine ore and store it's location
-local function _mineIfOre(inspect_action, mine_action)
+---@param inspect_action function function to call to inspect the block
+---@param mine_action function function to call to mine the block
+---@param do_mine boolean whether to mine the block
+---@return boolean
+local function _mineIfOre(inspect_action, mine_action, do_mine)
     local is_block, block = inspect_action()
     if is_block and string.find(block.name, "ore") then
         table.insert(_mine_state._ore_locations, {
             x = movement.current_position.x,
             y = movement.current_position.y,
             z = movement.current_position.z,
-            direction = movement.current_position.direction,
             name = block.name
         })
         state.save(_mine_state, STATEFILE)
 
-        if mine_action() then
-            logger.debug("Mined " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
-            return true
+        if do_mine then
+            if mine_action() then
+                logger.debug("Mined " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+                return true
+            else
+                logger.debug("Could not mine " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            end
         else
-            logger.debug("Could not mine " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            logger.debug("Found " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            return true
         end
     end
     return false
@@ -155,19 +163,19 @@ end
 local function _mineAdjacent()
     local did_mine = false
     for i = 1, 4 do
-        if _mineIfOre(turtle.inspect, turtle.dig) then
+        if _mineIfOre(turtle.inspect, turtle.dig, true) then
             did_mine = true
         end
         movement.turnRight()
     end
 
     -- check above for ore
-    if _mineIfOre(turtle.inspectUp, turtle.digUp) then
+    if _mineIfOre(turtle.inspectUp, turtle.digUp, true) then
         did_mine = true
     end
 
     -- check below for ore
-    if _mineIfOre(turtle.inspectDown, turtle.digDown) then
+    if _mineIfOre(turtle.inspectDown, turtle.digDown, false) then
         did_mine = true
     end
 
@@ -213,6 +221,7 @@ local function mine()
         -- mine left branch
         movement.turnLeft()
         for branch_side = 1, 2 do
+            local branch_has_ore = false
             if branch_side == 1 then logger.info("Mining left branch") else logger.info("Mining right branch") end
 
             for _ = 1, branch_length do
@@ -221,11 +230,15 @@ local function mine()
                     -- we ran out of fuel and returned to home
                     return
                 end
-                _mineAdjacent()  -- mine any ore blocks on the bottom layer
+                if _mineAdjacent() then  -- mine any ore blocks on the bottom layer
+                    branch_has_ore = true
+                end
 
                 turtle.digUp()  -- mine the layer above
                 turtle.up()
-                _mineAdjacent()  -- mine any ore blocks on the top layer
+                if _mineAdjacent() then  -- mine any ore blocks on the top layer
+                    branch_has_ore = true
+                end
                 turtle.down()
             end
 
@@ -264,6 +277,12 @@ local function mine()
                 if branch_position == branch_length - 1 and do_place_torches and current_light_level <= -1 then
                     _placeTorchIfNeeded()
                 end
+            end
+
+            if branch_has_ore then
+                logger.info("Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            else
+                logger.info("No ore found in this branch")
             end
 
             if branch_side == 1 then
