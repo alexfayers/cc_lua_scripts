@@ -42,11 +42,11 @@ local _bad_blocks = {
 local _notable_ores = {
     "coal",
     "iron",
-    -- "gold",
+    "gold",
     "diamond",
     "emerald",
-    -- "lapis",
-    -- "redstone",
+    "lapis",
+    "redstone",
     -- "ancient_debris",
 }
 
