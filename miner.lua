@@ -234,6 +234,7 @@ local function mine()
         -- update home location current point on main branch
         _mine_state.home_location = movement.current_position
         state.save(_mine_state, STATEFILE)
+        logger.debug("Set home location to " .. _mine_state.home_location.x .. ", " .. _mine_state.home_location.y .. ", " .. _mine_state.home_location.z)
 
         -- mine left branch
         movement.turnLeft()
