@@ -409,6 +409,9 @@ local function mine()
             end
 
             if branch_side == 1 then logger.info("Completed left branch") else logger.info("Completed right branch") end
+
+            inventory.stack()  -- stack inventory before moving on to the next branch
+            inventory.sort()  -- sort inventory before moving on to the next branch
         end
 
         logger.info("Completed branch pair")

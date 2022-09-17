@@ -63,11 +63,36 @@ local function _stack()
                 turtle.select(i)
                 for j = 1, 16 do
                     if i ~= j then
-                        if turtle.compareTo(j) then
-                            turtle.transferTo(j)
+                        if turtle.compareTo(j) and turtle.transferTo(j) then
                             sorted = false
                             break
                         end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+---Move all items in the turtle's inventory to the beginning of the inventory
+---This is done by stacking the inventory, then moving items to the beginning
+---of the inventory.
+local function _compact()
+    _stack()
+
+    for i = 16, 1, -1 do
+        local item = turtle.getItemDetail(i)
+        if item ~= nil then
+            turtle.select(i)
+            for j = 1, 16 do
+                if j > i then
+                    break
+                end
+                if i ~= j then
+                    local other_item = turtle.getItemDetail(j)
+                    if other_item == nil and turtle.transferTo(j) then
+                        break
                     end
                 end
             end
@@ -81,5 +106,6 @@ return {
     count = _count,
     dump = _dump,
     stack = _stack,
+    compact = _compact,
     logger = logger,
 }
