@@ -57,14 +57,16 @@ local function _sort()
     local sorted = false
     while not sorted do
         sorted = true
-        for i = 1, 16 do
+        for i = 16, 1, -1 do
             local item = turtle.getItemDetail(i)
             if item ~= nil then
                 turtle.select(i)
                 for j = 1, 16 do
                     if i ~= j then
-                        turtle.transferTo(j)
-                        sorted = false
+                        if turtle.compareTo(j) then
+                            turtle.transferTo(j)
+                            sorted = false
+                        end
                     end
                 end
             end
