@@ -265,7 +265,7 @@ local function mine()
                         turtle.digUp()
                     end
     
-                    turtle.up()
+                    movement.up()
                     if _mineAdjacent() then  -- mine any ore blocks on the top layer
                         branch_has_ore = true
                     end
@@ -277,7 +277,7 @@ local function mine()
                         turtle.digDown()
                     end
     
-                    turtle.down()
+                    movement.down()
                     if _mineAdjacent() then  -- mine any ore blocks on the top layer
                         branch_has_ore = true
                     end
@@ -333,9 +333,9 @@ local function mine()
                 logger.info("No ore found in this branch")
 
                 if _selectPlaceable() then  -- we mined a placeable block, so place it
-                    turtle.turnAround()
+                    movement.turnAround()
                     turtle.place()
-                    turtle.turnAround()
+                    movement.turnAround()
                 end
             end
 
