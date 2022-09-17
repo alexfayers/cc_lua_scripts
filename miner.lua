@@ -219,7 +219,12 @@ local function _selectPlaceable()
     local placeables = {
         "minecraft:dirt",
         "minecraft:cobblestone",
-        "minecraft:cobbled_deepslate"
+        "minecraft:cobbled_deepslate",
+        "minecraft:tuff",
+        "minecraft:andesite",
+        "minecraft:diorite",
+        "minecraft:granite",
+        
     }
     for _, placeable in ipairs(placeables) do
         if inventory.select(placeable) > 0 then
