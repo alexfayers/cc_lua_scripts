@@ -33,8 +33,27 @@ local function _count(item_name)
     return count
 end
 
+---Dump all items matching above the turtle
+---@param item_name string The name of the item to dump
+---@return number _ The number of items dumped
+local function _dump(item_name)
+    local count = 0
+    for i = 1, 16 do
+        local item = turtle.getItemDetail(i)
+        if item ~= nil and item.name == item_name then
+            turtle.select(i)
+            turtle.dropUp()
+            count = count + item.count
+        end
+    end
+    logger.debug("Dumped " .. count .. " of " .. item_name)
+    return count
+end
+
+
 return {
     select = _select,
     count = _count,
+    dump = _dump,
     logger = logger,
 }
