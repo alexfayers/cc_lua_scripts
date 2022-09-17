@@ -9,15 +9,17 @@ local strings = require("cc.strings")
 local LEVEL = {
     DEBUG = 0,
     INFO = 1,
-    WARN = 2,
-    ERROR = 3
+    SUCCESS = 2,
+    WARN = 3,
+    ERROR = 4
 }
 
 local LEVEL_STRINGS = {
     [0] = "D",
     [1] = "I",
-    [2] = "W",
-    [3] = "E"
+    [2] = "S",
+    [3] = "W",
+    [4] = "E"
 }
 
 local ALL_LOGGERS = {}
@@ -96,6 +98,22 @@ local function _info(level_variable, msg, log_filename)
 end
 
 
+---Log a message to the console and to a file (at success level)
+---@param msg string The message to log
+---@param log_filename string The file to log to
+local function _success(level_variable, msg, log_filename)
+    if level_variable <= LEVEL.SUCCESS then
+        msg = _format_log(LEVEL.SUCCESS, msg)
+        _print_color(msg, colors.green)
+        if log_filename ~= nil then
+            local file = fs.open(log_filename, "a")
+            file.writeLine(msg)
+            file.close()
+        end
+    end
+end
+
+
 ---Log a message to the console and to a file (at warning level)
 ---@param msg string The message to log
 ---@param log_filename string The file to log to
@@ -140,6 +158,10 @@ local function _new(logger_name)
         --- Log a message at information level
         ---@param msg string The message to log
         logger.info = function(msg) _info(logger.level, msg, log_filename) end
+
+        --- Log a message at success level
+        ---@param msg string The message to log
+        logger.success = function(msg) _success(logger.level, msg, log_filename) end
 
         --- Log a message at warning level
         ---@param msg string The message to log
