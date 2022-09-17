@@ -130,7 +130,10 @@ local function mine()
         for _ = 1, 2 do
             for _ = 1, branch_length do
                 turtle.dig()
-                movement.forward()
+                if not _fuelCheckForward() then  -- check fuel before moving forward
+                    -- we ran out of fuel and returned to home
+                    return
+                end
                 turtle.digUp()
             end
 
@@ -141,9 +144,13 @@ local function mine()
             for bad_block_i = 1, #_bad_blocks do
                 local bad_block = _bad_blocks[bad_block_i]
                 local did_drop = true
+                local dumped_count = 0
                 while did_drop do
-                    logger.info("Dumping %s blocks.", bad_block)
-                    did_drop = inventory.dump(bad_block) > 0
+                    dumped_count = inventory.dump(bad_block)
+                    if dumped_count > 0 then
+                        logger.debug("Dropped " .. dumped_count .. " " .. bad_block)
+                    end
+                    did_drop = dumped_count > 0
                 end
             end
 
@@ -171,7 +178,7 @@ local function mine()
                 end
 
                 turtle.dig()
-                movement.forward()
+                movement.forward()  -- just move forward, no need to check fuel since we're heading to a safe spot
 
                 current_light_level = current_light_level - 1
 
