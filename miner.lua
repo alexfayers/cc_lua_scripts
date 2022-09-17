@@ -423,4 +423,4 @@ local function mine()
     )
 end
 
-mine()
+_mineFallingBlocks()
