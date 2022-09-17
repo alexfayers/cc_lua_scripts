@@ -241,7 +241,7 @@ local function mine()
             local branch_has_ore = false
             if branch_side == 1 then logger.info("Mining left branch") else logger.info("Mining right branch") end
 
-            for _ = 1, branch_length do
+            for branch_length_position = 1, branch_length do
                 -- mine in front
                 if _mineIfOre(turtle.inspect, turtle.dig, true) then
                     branch_has_ore = true
@@ -257,18 +257,31 @@ local function mine()
                     branch_has_ore = true
                 end
 
-                -- mine the layer above
-                if _mineIfOre(turtle.inspectUp, turtle.digUp, true) then
-                    branch_has_ore = true
+                if branch_length_position % 2 == 1 then
+                    -- mine the layer above if we're at an odd number
+                    if _mineIfOre(turtle.inspectUp, turtle.digUp, true) then
+                        branch_has_ore = true
+                    else
+                        turtle.digUp()
+                    end
+    
+                    turtle.up()
+                    if _mineAdjacent() then  -- mine any ore blocks on the top layer
+                        branch_has_ore = true
+                    end
                 else
-                    turtle.digUp()
+                    -- mine the layer below if we're at an even number
+                    if _mineIfOre(turtle.inspectDown, turtle.digDown, true) then
+                        branch_has_ore = true
+                    else
+                        turtle.digDown()
+                    end
+    
+                    turtle.down()
+                    if _mineAdjacent() then  -- mine any ore blocks on the top layer
+                        branch_has_ore = true
+                    end
                 end
-
-                turtle.up()
-                if _mineAdjacent() then  -- mine any ore blocks on the top layer
-                    branch_has_ore = true
-                end
-                turtle.down()
             end
 
             -- go back to main branch
