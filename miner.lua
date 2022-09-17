@@ -23,6 +23,7 @@ local _mine_state = state.load(STATEFILE) or {
         z = 0,
         direction = "north"
     },
+    _ore_locations = {},
 }
 
 local _bad_blocks = {
@@ -124,6 +125,56 @@ local function _placeTorchIfNeeded()
 end
 
 
+---Mine ore and store it's location
+local function _mineIfOre(inspect_action, mine_action)
+    local block = inspect_action()
+    if block and block.name.find("ore") then
+        table.insert(_mine_state._ore_locations, {
+            x = movement.current_position.x,
+            y = movement.current_position.y,
+            z = movement.current_position.z,
+            direction = movement.current_position.direction,
+            name = block.name
+        })
+        state.save(_mine_state, STATEFILE)
+
+        if mine_action() then
+            logger.debug("Mined " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+            return true
+        else
+            logger.debug("Could not mine " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+        end
+    end
+    return false
+end
+
+
+
+---Check if any of the adjacent blocks are ore blocks.
+---If they are, mine them and add the location to the list of locations to mine
+local function _mineAdjacent()
+    local did_mine = false
+    for i = 1, 4 do
+        if _mineIfOre(turtle.inspect, turtle.dig) then
+            did_mine = true
+        end
+        movement.turnRight()
+    end
+
+    -- check above for ore
+    if _mineIfOre(turtle.inspectUp, turtle.digUp) then
+        did_mine = true
+    end
+
+    -- check below for ore
+    if _mineIfOre(turtle.inspectDown, turtle.digDown) then
+        did_mine = true
+    end
+
+    return did_mine
+end
+
+
 local function mine()
     -- fuel check
     local required_fuel = _getFuelRequired(branch_spacing, branch_length, branch_pair_count)
@@ -157,6 +208,7 @@ local function mine()
 
         -- update home location current point on main branch
         _mine_state.home_location = movement.current_position
+        state.save(_mine_state, STATEFILE)
 
         -- mine left branch
         movement.turnLeft()
