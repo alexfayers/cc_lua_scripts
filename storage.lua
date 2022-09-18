@@ -185,7 +185,7 @@ local function pushItemsToStorage(slot_to_push, item_count)
         end
     end
 
-    print("Pushed " .. moved_items .. " items")
+    print("...pushed " .. moved_items .. " items")
     return moved_items
 end
 
@@ -198,6 +198,7 @@ local function pushAllToStorage()
     end
 
     if attempted_transfer then
+        print()
         print("Pushed " .. transferred .. " items total")
     else
         print("No items to push")
