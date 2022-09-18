@@ -171,7 +171,7 @@ local function pullItemsFromStorage(search_term, search_requested_count)
     return moved_items
 end
 
-local function pushItemsToStorage(slot_to_push)
+local function pushItemsToStorage(slot_to_push, item_count)
     local moved_items = 0
 
     for i = 1, #storage_chests do
@@ -179,6 +179,10 @@ local function pushItemsToStorage(slot_to_push)
         local items_pushed = _peripherals.chest_input.object.pushItems(storage_chests[i], slot_to_push)
         
         moved_items = moved_items + items_pushed
+
+        if moved_items >= item_count then
+            break
+        end
     end
 
     print("Pushed " .. moved_items .. " items")
@@ -189,7 +193,7 @@ local function pushAllToStorage()
     local transferred = 0
     local attempted_transfer = true
     for current_slot, current_item in pairs(_peripherals.chest_input.object.list()) do
-        transferred = transferred + pushItemsToStorage(current_slot)
+        transferred = transferred + pushItemsToStorage(current_slot, current_item.count)
         attempted_transfer = true
     end
 
@@ -265,10 +269,10 @@ local function getInventory()
         local current_chest = peripheral.wrap(storage_chests[i])
         -- get the items in the chest
         local items = current_chest.list()
-        local slots = current_chest.size()
+        -- local slots = current_chest.size()
 
         -- loop through all the items
-        for current_slot, current_item in pairs(items) do
+        for _, current_item in pairs(items) do
             -- if the item is not in the table, add it
             if item_table[current_item.name] == nil then
                 item_table[current_item.name] = current_item.count
