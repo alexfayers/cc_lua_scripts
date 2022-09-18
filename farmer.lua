@@ -154,7 +154,7 @@ local function main()
         utils.refuel(fuel_source, fuel_threshold)
         farm()
         depositIfChest()
-        inventory.stack()  -- stack inventory to make everything neat
+        -- inventory.stack()  -- stack inventory to make everything neat
 
         -- only always plant on the first run
         if _farm_state.always_plant == true then
