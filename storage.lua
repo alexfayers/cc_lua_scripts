@@ -400,6 +400,9 @@ end
 
 shell.setCompletionFunction("storage.lua", complete)
 
+-- setup s alias for the script
+shell.setAlias("s", "storage.lua")
+
 
 -- handle commandline arguments
 
