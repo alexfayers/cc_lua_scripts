@@ -378,7 +378,7 @@ local function complete(_, index, argument, previous)
     end
 end
 
-shell.setCompletionFunction("storage", complete)
+shell.setCompletionFunction("storage.lua", complete)
 
 
 -- handle commandline arguments
