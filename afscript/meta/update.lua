@@ -2,10 +2,12 @@
 
 -- import logging if we already have it
 
-local logging = require("afscript.core.logging")
 local logger = nil
-if logging then
-    logger = logging.new("afscript.meta.update")
+if os.exists("afscript/core/logging.lua") then
+    local logging = require("afscript.core.logging")
+    if logging then
+        logger = logging.new("afscript.meta.update")
+    end
 end
 
 settings.define("afscript.update.github_token", {
