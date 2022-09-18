@@ -107,10 +107,12 @@ end
 local function pullItemsFromStorage(search_term, search_requested_count)
     local do_search = true
     local moved_items = 0
+    local do_substring_search = false
 
     if string.sub(search_term, 1, 1) == "!" then
         -- remove the ! from the search term
         search_term = string.sub(search_term, 2)
+        do_substring_search = true
     end
 
     for i = 1, #storage_chests do
@@ -124,7 +126,7 @@ local function pullItemsFromStorage(search_term, search_requested_count)
             local item_matches_search = false
 
             -- if the search term starts with a ! then we are looking for non - exact match
-            if string.sub(search_term, 1, 1) == "!" then
+            if do_substring_search then
                 -- if the search term matches then mark it as a match
                 if string.find(current_item.name, search_term) then
                     item_matches_search = true
@@ -203,10 +205,12 @@ local function getStorageItemCount(search_term)
     local item_count = 0
 
     local item_table = {}
+    local do_substring_search = false
 
     if string.sub(search_term, 1, 1) == "!" then
         -- remove the ! from the search term
         search_term = string.sub(search_term, 2)
+        do_substring_search = true
     end
 
     for i = 1, #storage_chests do
@@ -221,7 +225,7 @@ local function getStorageItemCount(search_term)
             local item_matches_search = false
 
             -- if the search term starts with a ! then we are looking for non - exact match
-            if string.sub(search_term, 1, 1) == "!" then
+            if do_substring_search then
                 -- if the search term matches then mark it as a match
                 if string.find(current_item.name, search_term) then
                     item_matches_search = true
