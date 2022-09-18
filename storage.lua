@@ -201,7 +201,25 @@ local function getStorageItemCount(search_term)
         -- loop through all the items
         for current_slot, current_item in pairs(items) do
             -- check if the item contains the search term
-            if string.find(current_item.name, search_term) then
+
+            local item_matches_search = false
+
+            -- if the search term starts with a ! then we are looking for non - exact match
+            if string.sub(search_term, 1, 1) == "!" then
+                -- remove the ! from the search term
+                search_term = string.sub(search_term, 2)
+                -- if the search term matches then mark it as a match
+                if string.find(current_item.name, search_term) then
+                    item_matches_search = true
+                end
+            else
+                -- if the search term matches then mark it as a match
+                if current_item.name == search_term then
+                    item_matches_search = true
+                end
+            end
+
+            if item_matches_search then
                 item_count = item_count + current_item.count
                 if item_table[current_item.name] == nil then
                     item_table[current_item.name] = current_item.count
