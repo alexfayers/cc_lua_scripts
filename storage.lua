@@ -110,8 +110,26 @@ local function pullItemsFromStorage(search_term, search_requested_count)
         local items = current_chest.list()
         -- loop through all the items
         for current_slot, current_item in pairs(items) do
+
+            local item_matches_search = false
+
+            -- if the search term starts with a ! then we are looking for non - exact match
+            if string.sub(search_term, 1, 1) == "!" then
+                -- remove the ! from the search term
+                search_term = string.sub(search_term, 2)
+                -- if the search term matches then mark it as a match
+                if string.find(current_item.name, search_term) then
+                    item_matches_search = true
+                end
+            else
+                -- if the search term matches then mark it as a match
+                if current_item.name == search_term then
+                    item_matches_search = true
+                end
+            end
+
             -- check if the item contains the search term
-            if string.find(current_item.name, search_term) then
+            if item_matches_search then
                 -- check how many items we need to move
                 if search_requested_count == "all" or search_requested_count == nil then
                     -- if we want to move all items, then we don't need to check how many items we need to move
