@@ -29,11 +29,6 @@ local _peripherals = {
     }
 }
 
-local exact_prefixes = {
-    "minecraft:",
-    "computercraft:"
-}
-
 -- validate settings
 
 if _peripherals.chest_input.name == nil then
@@ -133,11 +128,8 @@ local function pullItemsFromStorage(search_term, search_requested_count)
                 end
             else
                 -- if the search term matches then mark it as a match
-                for _, prefix in pairs(exact_prefixes) do
-                    if current_item.name == prefix .. search_term then
-                        item_matches_search = true
-                        break
-                    end
+                if string.find("^.+:" .. current_item.name .. "$", search_term) then
+                    item_matches_search = true
                 end
             end
 
@@ -237,11 +229,8 @@ local function getStorageItemCount(search_term)
                 end
             else
                 -- if the search term matches then mark it as a match
-                for _, prefix in pairs(exact_prefixes) do
-                    if current_item.name == prefix .. search_term then
-                        item_matches_search = true
-                        break
-                    end
+                if string.find("^.+:" .. current_item.name .. "$", search_term) then
+                    item_matches_search = true
                 end
             end
 
