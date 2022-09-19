@@ -143,3 +143,5 @@ local function main()
 
     parallel.waitForAny(main_receive, main_send)
 end
+
+main()
