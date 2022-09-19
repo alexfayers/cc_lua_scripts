@@ -6,6 +6,8 @@ local remote = require("afscript.core.remote")
 local logging = require("afscript.core.logging")
 local logger = logging.new("chat")
 
+logger.level = logging.LEVEL.ERROR
+
 ---Constants
 
 local PROTOCOL = "afscript_chat"
@@ -75,7 +77,7 @@ local function receive_message()
     end
 
     logger.success("Received message from " .. packet.sender)
-    return packet.data.message
+    return packet.sender .. ": " .. packet.data.message
 end
 
 -- ---Close the chat system
@@ -122,6 +124,7 @@ local function main_send()
     end
 
     while true do
+        write("~: ")
         local message = read()
 
         send_message(message)

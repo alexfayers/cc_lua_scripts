@@ -175,7 +175,7 @@ local function _receive(protocol, allowlist, timeout)
     end
 
     if received_protocol ~= nil and received_protocol == protocol then
-        return raw_packet
+        return textutils.unserialize(raw_packet)
     end
 
     return nil

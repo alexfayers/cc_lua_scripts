@@ -13,6 +13,7 @@
         "colors",
         "rednet",
         "read",
-        "parallel"
+        "parallel",
+        "write"
     ]
 }
