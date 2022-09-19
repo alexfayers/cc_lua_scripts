@@ -11,6 +11,8 @@
         "printError",
         "term",
         "colors",
-        "rednet"
+        "rednet",
+        "read",
+        "parallel"
     ]
 }
