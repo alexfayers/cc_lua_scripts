@@ -30,11 +30,9 @@ local function _initialize(protocol_name)
         logger.error("No wireless modem found")
         error("No wireless modem found")
         return false
-    else
-        logger.info("Found wireless modem")
     end
 
-    logger.success("Initialised")
+    logger.success("Remote service initialised")
     return true
 end
 
@@ -114,7 +112,7 @@ local function _handle_packet(raw_packet, handlers)
     local packet = textutils.unserialize(raw_packet)
     local data = packet.data
 
-    logger.info("Received " .. packet.type .. " packet from #" .. packet.sender)
+    logger.debug("Received " .. packet.type .. " packet from #" .. packet.sender)
 
     -- Run through user handlers
     if handlers[packet.type] then
@@ -132,9 +130,9 @@ local function _handle_packet(raw_packet, handlers)
     -- You can override these by adding your own handlers if you want.
     if packet.type == "response" then
         if data.status == "ok" then
-            logger.success("Received ok response")
+            logger.debug("Received ok response")
         elseif data.status == "error" then
-            logger.error("Received error response: " .. data.message)
+            logger.debug("Received error response: " .. data.message)
         end
     else
         logger.error("No handler available for packet of type '" .. packet.type .. "'")

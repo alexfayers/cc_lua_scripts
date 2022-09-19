@@ -150,11 +150,7 @@ local function _new(logger_name, logger_level)
     local logger = {}
 
     if ALL_LOGGERS[logger_name] == nil then
-        if logger_level ~= nil then
-            logger.level = logger_level
-        else
-            logger.level = LEVEL.INFO
-        end
+        logger.level = logger_level or LEVEL.INFO
 
         --- Log a message at debug level
         ---@param msg string The message to log
