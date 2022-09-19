@@ -36,9 +36,8 @@ end
 
 ---Send a message to a computer
 ---@param message string The message to send
----@param computer_id number The ID of the computer to send the message to
 ---@return boolean _ Whether the message was sent successfully or not
-local function send_message(message, computer_id)
+local function send_message(message)
     if not _initialized then
         logger.error("Not initialised")
         return false
@@ -48,10 +47,7 @@ local function send_message(message, computer_id)
         message = message
     })
 
-    if not remote.broadcast(PROTOCOL, packet) then
-        logger.error("Failed to send packet")
-        return false
-    end
+    remote.broadcast(PROTOCOL, packet)
 
     logger.success("Sent message")
     return true
@@ -82,23 +78,23 @@ local function receive_message()
     return packet.data.message
 end
 
----Close the chat system
----@return boolean _ Whether the system was closed successfully or not
-local function close()
-    if not _initialized then
-        logger.error("Not initialised")
-        return false
-    end
+-- ---Close the chat system
+-- ---@return boolean _ Whether the system was closed successfully or not
+-- local function close()
+--     if not _initialized then
+--         logger.error("Not initialised")
+--         return false
+--     end
 
-    if not remote.close(PROTOCOL) then
-        logger.error("Failed to close remote")
-        return false
-    end
+--     if not remote.close(PROTOCOL) then
+--         logger.error("Failed to close remote")
+--         return false
+--     end
 
-    _initialized = false
-    logger.success("Closed")
-    return true
-end
+--     _initialized = false
+--     logger.success("Closed")
+--     return true
+-- end
 
 ---Main
 local function main_receive()
@@ -128,10 +124,7 @@ local function main_send()
     while true do
         local message = read()
 
-        if not send_message(message, 1) then
-            logger.error("Failed to send message")
-            return
-        end
+        send_message(message)
     end
 end
 
