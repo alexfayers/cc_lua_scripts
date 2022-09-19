@@ -143,7 +143,7 @@ end
 
 ---Create a new logger, or return an existing one if it already exists
 ---@param logger_name string The name of the logger
----@param level number|nil The level to log at, or nil to use the default level
+---@param logger_level number|nil The level to log at, or nil to use the default level
 ---@return table _ The logger
 local function _new(logger_name, logger_level)
     local log_filename = _build_filename(logger_name)
