@@ -10,6 +10,7 @@
         "settings",
         "printError",
         "term",
-        "colors"
+        "colors",
+        "rednet"
     ]
 }
