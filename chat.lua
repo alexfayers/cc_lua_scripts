@@ -4,9 +4,7 @@
 
 local remote = require("afscript.core.remote")
 local logging = require("afscript.core.logging")
-local logger = logging.new("chat")
-
-logger.level = logging.LEVEL.ERROR
+local logger = logging.new("chat", logging.LEVEL.ERROR)
 
 ---Constants
 
