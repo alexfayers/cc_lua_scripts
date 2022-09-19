@@ -145,13 +145,15 @@ end
 ---@param logger_name string The name of the logger
 ---@param level number|nil The level to log at, or nil to use the default level
 ---@return table _ The logger
-local function _new(logger_name, level)
+local function _new(logger_name, logger_level)
     local log_filename = _build_filename(logger_name)
     local logger = {}
 
     if ALL_LOGGERS[logger_name] == nil then
-        if level == nil then
-            level = LEVEL.INFO
+        if logger_level ~= nil then
+            logger.level = logger_level
+        else
+            logger.level = LEVEL.INFO
         end
 
         --- Log a message at debug level
