@@ -2,6 +2,7 @@
 
 ---Imports
 
+local strings = require("cc.strings")
 local remote = require("afscript.core.remote")
 local logging = require("afscript.core.logging")
 local logger = logging.new("chat", logging.LEVEL.ERROR)
@@ -103,6 +104,8 @@ local function main_receive()
         return false
     end
 
+    local x_size, y_size = term.getSize()
+
     while true do
         local message = receive_message()
 
@@ -111,7 +114,22 @@ local function main_receive()
             return
         end
 
-        print(message)
+        local lines = strings.wrap(message, x_size)
+        -- reset the cursor position
+        term.setCursorPos(1, y_size)
+
+        for i = 1, #lines do
+            -- write the line
+            write(lines[i])
+
+            -- reset the cursor position
+            term.setCursorPos(1, y_size)
+
+            -- scroll the terminal up
+            term.scroll(1)
+        end
+
+        write("~: ")
     end
 end
 
@@ -121,9 +139,13 @@ local function main_send()
         return false
     end
 
+    local _, y_size = term.getSize()
+
     while true do
         write("~: ")
         local message = read()
+        -- reset the cursor position
+        term.setCursorPos(1, y_size)
 
         send_message(message)
     end
