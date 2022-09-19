@@ -3,7 +3,7 @@
 ---imports
 
 local logging = require("afscript.core.logging")
-local logger = logging.logger("remote")
+local logger = logging.new("remote")
 
 ---Config
 
