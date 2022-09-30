@@ -327,6 +327,24 @@ local function fullInventoryCheck()
     logger.info("Storage inventory written to inventory.txt")
 end
 
+local function calculateFullnessPercentage()
+    local total_slots = 0
+    local total_items = 0
+
+    for i = 1, #storage_chests do
+        -- get the current chest
+        local current_chest = peripheral.wrap(storage_chests[i])
+        -- get the items in the chest
+        local items = current_chest.list()
+        local slots = current_chest.size()
+
+        total_slots = total_slots + slots
+        total_items = total_items + #items
+    end
+
+    return math.floor((total_items / total_slots) * 100)
+end
+
 -- public wrappers
 
 local function publicPushAllToStorage()
@@ -355,4 +373,5 @@ return {
     getInventory = getInventory,
     getInventoryFromFile = getInventoryFromFile,
     getStorageItemCount = getStorageItemCount,
+    calculateFullnessPercentage = calculateFullnessPercentage
 }
