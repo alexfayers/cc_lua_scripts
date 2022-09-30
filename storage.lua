@@ -17,6 +17,9 @@ local basalt = require(basaltPath:gsub(".lua", ""))
 
 -- load storage
 local storage = require("afscript.storage.storage")
+local remote = require("afscript.core.remote")
+local logging = require("afscript.core.logging")
+local logger = logging.new("storage", logging.LEVEL.ERROR)
 
 -- setup config
 local config = {
@@ -195,6 +198,7 @@ local fullnessBar = mainFrame
 local readThread = mainFrame:addThread()
 local storageThread = mainFrame:addThread()
 local fullnessThread = mainFrame:addThread()
+local controlThread = mainFrame:addThread()
 
 local searchBox = mainFrame
     :addInput("searchBox")
@@ -296,54 +300,59 @@ local itemList = mainFrame
 
 
 
+local function pullAction()
+    local search_index = itemList:getItemIndex()
+    local search = itemList:getItem(search_index).text
+
+    local amount = amountInput:getValue()
+
+    -- basalt.debug("pull " .. search .. " " .. amount)
+    noticeLabel:setText("Pulling " .. amount .. " " .. search)
+
+    storageThread:start(function()
+        storage.pullFromStorage(search, tonumber(amount))
+        noticeLabel:setText("Pulled " .. amount .. " " .. search)
+        readThread:start(function()
+            updateItems()
+            populateItemList(searchBox:getValue())
+            os.sleep(0.1)
+        end)
+        os.sleep(0.1)
+    end)
+end
+
 local pullButton = mainFrame
     :addButton("pullButton")
     :setPosition(screen_width - config.sizes.button.width - 1, 6) 
     :setText("Pull from storage")
-    :onClick(function()
-        local search_index = itemList:getItemIndex()
-        local search = itemList:getItem(search_index).text
-
-        local amount = amountInput:getValue()
-
-        -- basalt.debug("pull " .. search .. " " .. amount)
-        noticeLabel:setText("Pulling " .. amount .. " " .. search)
-
-        storageThread:start(function()
-            storage.pullFromStorage(search, tonumber(amount))
-            noticeLabel:setText("Pulled " .. amount .. " " .. search)
-            readThread:start(function()
-                updateItems()
-                populateItemList(searchBox:getValue())
-                os.sleep(0.1)
-            end)
-            os.sleep(0.1)
-        end)
-    end)
+    :onClick(pullAction)
     :setBackground(config.colors.button.bg_disabled)
     :disable()
     :show()
 
 -- Push stuff
+
+local function pushAction()
+    -- basalt.debug("push")
+    noticeLabel:setText("Pushing all items")
+
+    storageThread:start(function()
+        storage.pushAllToStorage()
+        noticeLabel:setText("Pushed all items")
+        readThread:start(function()
+            updateItems()
+            populateItemList(searchBox:getValue())
+            os.sleep(0.1)
+        end)
+        os.sleep(0.1)
+    end)
+end
+
 local pushButton = mainFrame --> Basalt returns an instance of the object on most methods, to make use of "call-chaining"
     :addButton("pushButton") --> This is an example of call chaining
     :setPosition(screen_width - config.sizes.button.width - 1, 10)
     :setText("Push to storage")
-    :onClick(function() 
-        -- basalt.debug("push")
-        noticeLabel:setText("Pushing all items")
-
-        storageThread:start(function()
-            storage.pushAllToStorage()
-            noticeLabel:setText("Pushed all items")
-            readThread:start(function()
-                updateItems()
-                populateItemList(searchBox:getValue())
-                os.sleep(0.1)
-            end)
-            os.sleep(0.1)
-        end)
-    end)
+    :onClick(pushAction)
     :show()
 
 
@@ -355,6 +364,73 @@ setupButtonColoring(pushButton)
 -- initial list population
 updateItems()
 populateItemList("")
+
+-- remote control stuff
+
+---Constants
+
+local PROTOCOL = "alex_storage"
+
+---Variables
+
+local _initialized = false
+
+---Functions
+
+---Initialise the chat system
+---@return boolean _ Whether the initialisation was successful or not
+local function _initialize()
+    if _initialized then
+        logger.error("Already initialised")
+        return false
+    end
+
+    if not remote.initialize(PROTOCOL) then
+        logger.error("Failed to initialise remote")
+        return false
+    end
+
+    _initialized = true
+    logger.success("Initialised")
+    return true
+end
+
+local function _readMessages()
+    if not _initialized then
+        _initialize()
+    end
+
+    while true do
+        local packet = remote.receive(PROTOCOL)
+
+        if packet then
+            if packet.type == "push" then
+                basalt.debug("Received push packet")
+                pushAction()
+            elseif packet.type == "pull" then
+                basalt.debug("Received pull packet")
+                storageThread:start(function()
+                    storage.pullFromStorage(packet.data.search, tonumber(packet.data.count))
+                    noticeLabel:setText("Pulled " .. packet.data.count .. " " .. packet.data.search)
+                    readThread:start(function()
+                        updateItems()
+                        populateItemList(searchBox:getValue())
+                        os.sleep(0.1)
+                    end)
+                    os.sleep(0.1)
+                end)
+            else
+                basalt.debug("Received unknown packet")
+            end
+        else
+            basalt.debug("No packet received")
+        end
+    end
+end
+
+-- end remote control stuff
+
+controlThread:start(_readMessages)  -- Start the remote control thread
 
 basalt.autoUpdate()
 
