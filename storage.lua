@@ -115,7 +115,7 @@ local function updateItems()
 end
 
 -- from https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
-function spairs(t, order)
+local function spairs(t, order)
     -- collect the keys
     local keys = {}
     for k in pairs(t) do keys[#keys+1] = k end
