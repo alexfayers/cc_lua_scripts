@@ -118,6 +118,9 @@ local function main_send()
                 count = 1
             })
             remote.send(PROTOCOL, packet, 9)
+        elseif message == "update" then
+            local packet = remote.build_packet(PROTOCOL, "update", {})
+            remote.send(PROTOCOL, packet, 9)
         end
     end
 end
