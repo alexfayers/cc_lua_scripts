@@ -89,11 +89,12 @@ local mainFrame = basalt.createFrame("mainFrame")
     :show()
 
 local function updateItems()
-    items = {
-        test = 10,
-        abcdef = 1,
-        poggers_item = 7
-    }
+    items = storage.getInventory()
+    -- items = {
+    --     test = 10,
+    --     abcdef = 1,
+    --     poggers_item = 7
+    -- }
 end
 
 local function populateItemList(filter)
