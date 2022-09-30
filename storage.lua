@@ -41,6 +41,13 @@ local config = {
             fg = colors.black,
             notice = colors.orange,
         },
+        bar = {
+            bg = colors.white,
+            fg_low = colors.green,
+            fg_med = colors.orange,
+            fg_high = colors.red,
+            label = colors.orange
+        },
     },
     sizes = {
         button = {
@@ -107,11 +114,35 @@ local function updateItems()
     end
 end
 
+-- from https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+function spairs(t, order)
+    -- collect the keys
+    local keys = {}
+    for k in pairs(t) do keys[#keys+1] = k end
+
+    -- if order function given, sort by it by passing the table and keys a, b,
+    -- otherwise just sort the keys 
+    if order then
+        table.sort(keys, function(a,b) return order(t, a, b) end)
+    else
+        table.sort(keys)
+    end
+
+    -- return the iterator function
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
+
 local function populateItemList(filter)
     local itemList = mainFrame:getObject("itemList")
     itemList:clear()
     
-    for item_name, item_count in pairs(items) do
+    for item_name, item_count in spairs(items) do
         if filter ~= "" then
             if string.find(item_name, filter) then
                 itemList:addItem(item_name, nil, nil, item_count)
@@ -142,18 +173,28 @@ local noticeLabel = mainFrame
     :setForeground(config.colors.label.notice)
     :show()
 
-local noticeLabel2 = mainFrame
-    :addLabel("noticeLabel2")
-    :setPosition(24, 15)
+local fullnessLabel = mainFrame
+    :addLabel("fullnessLabel")
+    :setPosition(24, 17)
     :setText("")
     -- :setBackground(config.colors.main.bg)
-    :setForeground(config.colors.label.notice)
+    :setForeground(config.colors.bar.label)
+    :show()
+
+local fullnessBar = mainFrame
+    :addProgressbar("fullnessBar")
+    :setPosition(24, 18)
+    :setSize(26, 1)
+    :setProgress(0)
+    :setBackground(config.colors.bar.bg)
+    :setProgressBar(config.colors.bar.fg_low)
     :show()
 
 -- Search stuff
 
 local readThread = mainFrame:addThread()
 local storageThread = mainFrame:addThread()
+local fullnessThread = mainFrame:addThread()
 
 local searchBox = mainFrame
     :addInput("searchBox")
@@ -165,6 +206,7 @@ local searchBox = mainFrame
         local search = self:getValue()
 
         populateItemList(search)
+        mainFrame:getObject("itemList"):setOffset(0)
     end)
     :show()
 
@@ -230,6 +272,21 @@ local itemList = mainFrame
             local item = self:getItem(item_index)
 
             amountInput:setValue(items[item.text])
+
+            fullnessThread:start(function()
+                local fullness = storage.calculateFullnessPercentage()
+                fullnessLabel:setText("Fullness: " .. fullness .. "%")
+
+                fullnessBar:setProgress(fullness)
+                if fullness < 50 then
+                    fullnessBar:setProgressBar(config.colors.bar.fg_low)
+                elseif fullness < 75 then
+                    fullnessBar:setProgressBar(config.colors.bar.fg_mid)
+                else
+                    fullnessBar:setProgressBar(config.colors.bar.fg_high)
+                end
+                os.sleep(0.1)
+            end)
         else
             pullButton:setBackground(config.colors.button.bg_disabled)
             pullButton:disable()
