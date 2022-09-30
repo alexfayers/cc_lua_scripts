@@ -35,7 +35,12 @@ local config = {
         input = {
             bg = colors.white,
             fg = colors.black
-        }
+        },
+        label = {
+            bg = colors.white,
+            fg = colors.black,
+            notice = colors.orange,
+        },
     },
     sizes = {
         button = {
@@ -44,8 +49,6 @@ local config = {
         }
     }
 }
-
-local LIVE = false
 
 local screen_width, screen_height = term.getSize()
 local items = { }
@@ -58,7 +61,8 @@ local function setupButtonColoring(self, event, button, x, y)
     self:setBackground(config.colors.button.bg)
     self:setForeground(config.colors.button.fg)
 
-    text = self:getValue()
+    local text = self:getValue()
+    local width
 
     if string.len(text) > config.sizes.button.width then
         width = string.len(text) + 2
@@ -101,12 +105,6 @@ local function updateItems()
             c = c + 1
         end
     end
-
-    -- items = {
-    --     test = 10,
-    --     abcdef = 1,
-    --     poggers_item = 7
-    -- }
 end
 
 local function populateItemList(filter)
@@ -135,7 +133,27 @@ local searchLabel = mainFrame
     :show()
 
 
+-- notice label
+local noticeLabel = mainFrame
+    :addLabel("noticeLabel")
+    :setPosition(24, 14)
+    :setText("")
+    -- :setBackground(config.colors.main.bg)
+    :setForeground(config.colors.label.notice)
+    :show()
+
+local noticeLabel2 = mainFrame
+    :addLabel("noticeLabel2")
+    :setPosition(24, 15)
+    :setText("")
+    -- :setBackground(config.colors.main.bg)
+    :setForeground(config.colors.label.notice)
+    :show()
+
 -- Search stuff
+
+local readThread = mainFrame:addThread()
+local storageThread = mainFrame:addThread()
 
 local searchBox = mainFrame
     :addInput("searchBox")
@@ -232,10 +250,18 @@ local pullButton = mainFrame
         local amount = amountInput:getValue()
 
         -- basalt.debug("pull " .. search .. " " .. amount)
-        storage.pullFromStorage(search, tonumber(amount))
+        noticeLabel:setText("Pulling " .. amount .. " " .. search)
 
-        updateItems()
-        populateItemList(searchBox:getValue())
+        storageThread:start(function()
+            storage.pullFromStorage(search, tonumber(amount))
+            noticeLabel:setText("Pulled " .. amount .. " " .. search)
+            readThread:start(function()
+                updateItems()
+                populateItemList(searchBox:getValue())
+                os.sleep(0.1)
+            end)
+            os.sleep(0.1)
+        end)
     end)
     :setBackground(config.colors.button.bg_disabled)
     :disable()
@@ -248,10 +274,18 @@ local pushButton = mainFrame --> Basalt returns an instance of the object on mos
     :setText("Push to storage")
     :onClick(function() 
         -- basalt.debug("push")
-        storage.pushAllToStorage()
+        noticeLabel:setText("Pushing all items")
 
-        updateItems()
-        populateItemList(searchBox:getValue())
+        storageThread:start(function()
+            storage.pushAllToStorage()
+            noticeLabel:setText("Pushed all items")
+            readThread:start(function()
+                updateItems()
+                populateItemList(searchBox:getValue())
+                os.sleep(0.1)
+            end)
+            os.sleep(0.1)
+        end)
     end)
     :show()
 
