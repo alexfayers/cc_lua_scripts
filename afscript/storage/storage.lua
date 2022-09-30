@@ -1,4 +1,7 @@
 local pretty = require("cc.pretty")
+local logging = require("afscript.core.logging")
+
+local logger = logging.new("afscript.storage", logging.LEVEL.ERROR)
 
 -- define constants
 
@@ -32,7 +35,7 @@ local _peripherals = {
 -- validate settings
 
 if _peripherals.chest_input.name == nil then
-    print("No chest name specified in settings. Please run 'set storage.chest_name {NAME}'.")
+    logger.error("No chest name specified in settings. Please run 'set storage.chest_name {NAME}'.")
     error("No chest name specified in settings.")
 end
 
@@ -41,16 +44,16 @@ end
 _peripherals.chest_input.object = peripheral.wrap(_peripherals.chest_input.name)
 
 if _peripherals.chest_input.object == nil then
-    print("No chest found with name '" .. _peripherals.chest_input.name .. "'. Please run 'set storage.chest_name {NAME}'.")
-    print("And ensure that the full name is specified.")
+    logger.error("No chest found with name '" .. _peripherals.chest_input.name .. "'. Please run 'set storage.chest_name {NAME}'.")
+    logger.error("And ensure that the full name is specified.")
     error("No chest found with name " .. _peripherals.chest_input.name)
 end
 
 _peripherals.chest_output.object = peripheral.wrap(_peripherals.chest_output.name)
 
 if _peripherals.chest_output.object == nil then
-    print("No chest found with name '" .. _peripherals.chest_output.name .. "'. Please run 'set storage.chest_name {NAME}'.")
-    print("And ensure that the full name is specified.")
+    logger.error("No chest found with name '" .. _peripherals.chest_output.name .. "'. Please run 'set storage.chest_name {NAME}'.")
+    logger.error("And ensure that the full name is specified.")
     error("No chest found with name " .. _peripherals.chest_output.name)
 end
 
@@ -159,7 +162,7 @@ local function pullItemsFromStorage(search_term, search_requested_count)
         end
     end
 
-    print("Pulled " .. moved_items .. " '".. search_term .."'")
+    logger.info("Pulled " .. moved_items .. " '".. search_term .."'")
     return moved_items
 end
 
@@ -177,7 +180,7 @@ local function pushItemsToStorage(slot_to_push, item_count)
         end
     end
 
-    print("...pushed " .. moved_items .. " items")
+    logger.debug("...pushed " .. moved_items .. " items")
     return moved_items
 end
 
@@ -190,10 +193,10 @@ local function pushAllToStorage()
     end
 
     if attempted_transfer then
-        print()
-        print("Pushed " .. transferred .. " items total")
+        -- print()
+        logger.info("Pushed " .. transferred .. " items total")
     else
-        print("No items to push")
+        logger.info("No items to push")
     end
 end
 
@@ -246,7 +249,7 @@ local function getStorageItemCount(search_term)
     end
 
     pretty.print(pretty.pretty(item_table))
-    print("Found " .. item_count .. " items matching the search '" .. search_term .. "'")
+    logger.info("Found " .. item_count .. " items matching the search '" .. search_term .. "'")
 
     return item_count
 end
@@ -312,7 +315,7 @@ local function fullInventoryCheck()
     local item_table = getInventory()
 
     -- print the table
-    pretty.print(pretty.pretty(item_table))
+    -- pretty.print(pretty.pretty(item_table))
 
     -- write the table to a file
     local file = fs.open("inventory.txt", "w")
@@ -321,7 +324,7 @@ local function fullInventoryCheck()
 
     saveInventoryToCompletionFile(item_table)
 
-    print("Storage inventory written to inventory.txt")
+    logger.info("Storage inventory written to inventory.txt")
 end
 
 -- public wrappers
@@ -337,10 +340,10 @@ local function publicPullFromStorage(search_term, search_requested_count)
     end
     search_requested_count = tonumber(search_requested_count)
     if item_count >= search_requested_count then
-        print("Pulling " .. search_requested_count .. " out of " .. item_count .. " '".. search_term .."' from storage")
+        logger.info("Pulling " .. search_requested_count .. " out of " .. item_count .. " '".. search_term .."' from storage")
         pullItemsFromStorage(search_term, search_requested_count)
     else
-        print("Error: Not enough items to pull. Have " .. item_count .. " '".. search_term .. "', need " .. search_requested_count)
+        logger.warning("Not enough items to pull. Have " .. item_count .. " '".. search_term .. "', need " .. search_requested_count)
     end
 end
 
