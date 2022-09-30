@@ -231,7 +231,7 @@ local pullButton = mainFrame
 
         local amount = amountInput:getValue()
 
-        basalt.debug("pull " .. search .. " " .. amount)
+        -- basalt.debug("pull " .. search .. " " .. amount)
         storage.pullFromStorage(search, tonumber(amount))
 
         updateItems()
@@ -247,7 +247,7 @@ local pushButton = mainFrame --> Basalt returns an instance of the object on mos
     :setPosition(screen_width - config.sizes.button.width - 1, 10)
     :setText("Push to storage")
     :onClick(function() 
-        basalt.debug("push")
+        -- basalt.debug("push")
         storage.pushAllToStorage()
 
         updateItems()
