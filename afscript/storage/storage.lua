@@ -248,7 +248,7 @@ local function getStorageItemCount(search_term)
         end
     end
 
-    pretty.print(pretty.pretty(item_table))
+    -- pretty.print(pretty.pretty(item_table))
     logger.info("Found " .. item_count .. " items matching the search '" .. search_term .. "'")
 
     return item_count
