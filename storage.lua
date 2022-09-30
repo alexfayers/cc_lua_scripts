@@ -419,6 +419,28 @@ local function _readMessages()
                     end)
                     os.sleep(0.1)
                 end)
+            elseif packet.type == "update" then
+                basalt.debug("Received update packet")
+                readThread:start(function()
+                    local raw_items = storage.getInventory()
+
+                    items = {}
+                    for k, v in pairs(raw_items) do
+                        local c = 0
+                        for match in string.gmatch(k, '([^:]+)') do
+                            if c == 1 then
+                                items[match] = v
+                            end
+                            c = c + 1
+                        end
+                    end
+
+                    local packet = remote.build_packet(PROTOCOL, "update", {
+                        items = items
+                    })
+
+                    remote.send(PROTOCOL, packet, packet.sender)
+                end)
             else
                 basalt.debug("Received unknown packet")
             end

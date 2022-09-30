@@ -50,13 +50,13 @@ local function receive_message()
         return nil
     end
 
-    if packet.type ~= "message" then
+    if packet.type ~= "update" then
         logger.error("Received invalid packet type")
         return nil
     end
 
     logger.success("Received message from " .. packet.sender)
-    return packet.sender .. ": " .. packet.data.message
+    return packet.sender .. ": " .. packet.data.items
 end
 
 ---Main
