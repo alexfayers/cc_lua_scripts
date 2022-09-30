@@ -235,6 +235,7 @@ local pullButton = mainFrame
         storage.pullFromStorage(search, tonumber(amount))
 
         updateItems()
+        populateItemList(searchBox:getValue())
     end)
     :setBackground(config.colors.button.bg_disabled)
     :disable()
@@ -250,6 +251,7 @@ local pushButton = mainFrame --> Basalt returns an instance of the object on mos
         storage.pushAllToStorage()
 
         updateItems()
+        populateItemList(searchBox:getValue())
     end)
     :show()
 
