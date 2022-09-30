@@ -89,7 +89,19 @@ local mainFrame = basalt.createFrame("mainFrame")
     :show()
 
 local function updateItems()
-    items = storage.getInventory()
+    local raw_items = storage.getInventory()
+
+    items = {}
+    for k, v in pairs(raw_items) do
+        local c = 0
+        for match in string.gmatch(k, '([^:]+)') do
+            if c == 1 then
+                items[match] = v
+            end
+            c = c + 1
+        end
+    end
+
     -- items = {
     --     test = 10,
     --     abcdef = 1,
@@ -220,7 +232,7 @@ local pullButton = mainFrame
         local amount = amountInput:getValue()
 
         basalt.debug("pull " .. search .. " " .. amount)
-        storage.pullFromStorage(search, amount)
+        storage.pullFromStorage(search, tonumber(amount))
 
         updateItems()
     end)
