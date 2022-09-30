@@ -4,8 +4,19 @@ if not(fs.exists(basaltPath))then
     shell.run("pastebin run ESs1mg7P packed true "..basaltPath:gsub(".lua", ""))
 end
 
+-- download storage if it's not downloaded already
+local update = require("afscript.meta.update")
+update.update_library({
+    submodules = {
+        "storage"
+    }
+})
+
 -- load basalt
 local basalt = require(basaltPath:gsub(".lua", ""))
+
+-- load storage
+local storage = require("afscript.storage.storage")
 
 -- setup config
 local config = {
@@ -33,6 +44,8 @@ local config = {
         }
     }
 }
+
+local LIVE = false
 
 local screen_width, screen_height = term.getSize()
 local items = { }
@@ -206,6 +219,7 @@ local pullButton = mainFrame
         local amount = amountInput:getValue()
 
         basalt.debug("pull " .. search .. " " .. amount)
+        storage.pullFromStorage(search, amount)
 
         updateItems()
     end)
@@ -219,7 +233,8 @@ local pushButton = mainFrame --> Basalt returns an instance of the object on mos
     :setPosition(screen_width - config.sizes.button.width - 1, 10)
     :setText("Push to storage")
     :onClick(function() 
-        basalt.debug("Would push")
+        basalt.debug("push")
+        storage.pushAllToStorage()
 
         updateItems()
     end)
