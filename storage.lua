@@ -285,8 +285,11 @@ local function _readMessages()
                         end
                     end
 
+                    local fullness = storage.calculateFullnessPercentage()
+
                     local packet = remote.build_packet(PROTOCOL, "update", {
-                        items = items
+                        items = items,
+                        fullness = fullness
                     })
 
                     remote.send(PROTOCOL, packet, 17)  -- TODO: sender
