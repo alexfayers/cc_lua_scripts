@@ -271,10 +271,10 @@ local function _readMessages()
 
         if packet then
             if packet.type == "push" then
-                basalt.debug("Received push packet")
+                -- basalt.debug("Received push packet")
                 pushAction()
             elseif packet.type == "pull" then
-                basalt.debug("Received pull packet")
+                -- basalt.debug("Received pull packet")
                 storageThread:start(function()
                     storage.pullFromStorage(packet.data.search, tonumber(packet.data.count))
                     noticeLabel:setText("Pulled " .. packet.data.count .. " " .. packet.data.search)
@@ -287,7 +287,7 @@ local function _readMessages()
                     sleep(0.1)
                 end)
             elseif packet.type == "update" then
-                basalt.debug("Received update packet")
+                -- basalt.debug("Received update packet")
                 sendRemoteUpdate()
             else
                 basalt.debug("Received unknown packet")
