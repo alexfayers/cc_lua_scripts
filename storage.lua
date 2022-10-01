@@ -287,14 +287,18 @@ local function _readMessages()
             elseif packet.type == "pull" then
                 -- basalt.debug("Received pull packet")
                 storageThread:start(function()
-                    storage.pullFromStorage(packet.data.search, tonumber(packet.data.count))
-                    noticeLabel:setText("Pulled " .. packet.data.count .. " " .. packet.data.search)
-                    readThread:start(function()
-                        updateItems()
-                        populateItemList(searchBox:getValue())
-                        sendRemoteUpdate()
-                        sleep(0.1)
-                    end)
+                    if storage.pullFromStorage(packet.data.search, tonumber(packet.data.count)) then
+                        noticeLabel:setText("Pulled " .. packet.data.count .. " " .. packet.data.search)
+                        readThread:start(function()
+                            updateItems()
+                            populateItemList(searchBox:getValue())
+                            sendRemoteUpdate()
+                            sleep(0.1)
+                        end)
+                    else
+                        -- how can they even see this??? hax!!
+                        noticeLabel:setText("Not enough " .. packet.data.search)
+                    end
                     sleep(0.1)
                 end)
             elseif packet.type == "update" then
