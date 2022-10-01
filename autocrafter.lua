@@ -9,8 +9,32 @@ local recipes = require("afscript.craft.recipe")
 local remote = require("afscript.core.remote")
 local pretty = require("cc.pretty")
 
-local PROTOCOL = "storage"  -- TODO: setting
-local PARENT_PC = 4  -- TODO: setting
+settings.define("storage.parent_id", {
+    description = "ID for the parent computer",
+    default=nil,
+    type = "number"
+})
+
+settings.define("storage.network_name", {
+    description = "Name of the protocol to use for networked control of the storage system. Must be the same for child and parent computers.",
+    default=nil,
+    type = "string"
+})
+
+---Constants
+
+local PROTOCOL = settings.get("storage.network_name")
+local PARENT_PC = settings.get("storage.parent_id")
+
+if not PROTOCOL then
+    logger.error("No network name specified in settings. Please run 'set storage.network_name {NAME}'.")
+    error("No network name specified in settings.")
+end
+
+if not PARENT_PC then
+    logger.error("No parent ID specified in settings. Please run 'set storage.parent_id {ID}'.")
+    error("No parent ID specified in settings.")
+end
 
 ---Variables
 
