@@ -19,6 +19,17 @@ local helper = require("afscript.core.helper")
 local screen_width, screen_height = term.getSize()
 local items = { }
 
+-- remote control stuff
+
+---Constants
+
+local PROTOCOL = "alex_storage"
+
+---Variables
+
+local _initialized = false
+
+
 -- storage helper functions
 local function updateItems()
     items = storage.getInventoryClean()
@@ -188,6 +199,22 @@ end
 
 -- Push stuff
 
+local function sendRemoteUpdate()
+    readThread:start(function()
+        local raw_items = storage.getInventoryClean()
+        local fullness = storage.calculateFullnessPercentage()
+
+        local packet = remote.build_packet(PROTOCOL, "update", {
+            items = raw_items,
+            fullness = fullness
+        })
+
+        remote.broadcast(PROTOCOL, packet)
+        sleep(0.1)
+    end)
+end
+
+
 local function pushAction()
     -- basalt.debug("push")
     noticeLabel:setText("Pushing all items")
@@ -198,6 +225,7 @@ local function pushAction()
         readThread:start(function()
             updateItems()
             populateItemList(searchBox:getValue())
+            sendRemoteUpdate()
             sleep(0.1)
         end)
         sleep(0.1)
@@ -215,15 +243,6 @@ local pullButton = gui.newButton(mainFrame, "pullButton", screen_width - gui_con
 updateItems()
 populateItemList("")
 
--- remote control stuff
-
----Constants
-
-local PROTOCOL = "alex_storage"
-
----Variables
-
-local _initialized = false
 
 ---Functions
 
@@ -254,8 +273,6 @@ local function _readMessages()
         local packet = remote.receive(PROTOCOL)
 
         if packet then
-            local do_update = true
-
             if packet.type == "push" then
                 basalt.debug("Received push packet")
                 pushAction()
@@ -267,30 +284,18 @@ local function _readMessages()
                     readThread:start(function()
                         updateItems()
                         populateItemList(searchBox:getValue())
+                        sendRemoteUpdate()
                         sleep(0.1)
                     end)
                     sleep(0.1)
                 end)
             elseif packet.type == "update" then
                 basalt.debug("Received update packet")
+                sendRemoteUpdate()
             else
                 basalt.debug("Received unknown packet")
-                do_update = false
             end
 
-            if do_update then
-                readThread:start(function()
-                    local raw_items = storage.getInventoryClean()
-                    local fullness = storage.calculateFullnessPercentage()
-
-                    local packet = remote.build_packet(PROTOCOL, "update", {
-                        items = raw_items,
-                        fullness = fullness
-                    })
-
-                    remote.broadcast(PROTOCOL, packet)
-                end)
-            end
         else
             basalt.debug("No packet received")
         end
