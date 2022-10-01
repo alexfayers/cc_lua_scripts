@@ -63,7 +63,11 @@ local function convertToPattern(raw_recipe)
             local column_index = 1
             for column in row:gmatch"." do
                 if column ~= " " then
-                    recipe[row_index][column_index] = raw_recipe.key[column].item
+                    if raw_recipe.key[column][1] then
+                        recipe[row_index][column_index] = raw_recipe.key[column][1].item
+                    else
+                        recipe[row_index][column_index] = raw_recipe.key[column].item
+                    end
                 else
                     recipe[row_index][column_index] = ""
                 end
@@ -101,6 +105,27 @@ local function get(item_id)
     return convertToPattern(raw_recipe)
 end
 
+---Calcualte the number of each item required to craft the given recipe
+---@param recipe table
+local function requirements(recipe)
+    local requirements = {}
+
+    for _, row in pairs(recipe) do
+        for _, item in pairs(row) do
+            if item ~= "" then
+                if requirements[item] then
+                    requirements[item] = requirements[item] + 1
+                else
+                    requirements[item] = 1
+                end
+            end
+        end
+    end
+
+    return requirements
+end
+
 return {
-    get = get
+    get = get,
+    requirements = requirements
 }
