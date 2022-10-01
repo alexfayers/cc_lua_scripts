@@ -6,6 +6,18 @@ local strings = require("cc.strings")
 local remote = require("afscript.core.remote")
 local logging = require("afscript.core.logging")
 local logger = logging.new("storage-remote", logging.LEVEL.ERROR)
+local gui_config = require("afscript.gui.config")
+local gui = require("afscript.gui.gui")
+
+
+local basaltPath = "basalt.lua"
+if not(fs.exists(basaltPath))then
+    shell.run("pastebin run ESs1mg7P packed true "..basaltPath:gsub(".lua", ""))
+end
+
+-- load basalt
+local basalt = require(basaltPath:gsub(".lua", ""))
+
 
 ---Constants
 
@@ -36,30 +48,6 @@ local function _initialize()
     return true
 end
 
----Receive a message from a computer
----@return string|nil _ The message received
-local function receive_packet()
-    if not _initialized then
-        logger.error("Not initialised")
-        return nil
-    end
-
-    local packet = remote.receive(PROTOCOL, {PARENT_PC})
-
-    if not packet then
-        logger.error("Failed to receive packet")
-        return nil
-    end
-
-    if packet.type ~= "update" then
-        logger.error("Received invalid packet type")
-        return nil
-    end
-
-    logger.success("Received message from " .. packet.sender)
-    return textutils.serialize(packet.data.items)
-end
-
 ---Main
 local function main_receive()
     if not _initialized then
@@ -67,32 +55,30 @@ local function main_receive()
         return false
     end
 
-    local x_size, y_size = term.getSize()
-
     while true do
-        local message = receive_packet()
+        local packet = remote.receive(PROTOCOL, {PARENT_PC})
 
-        if not message then
-            logger.error("Failed to receive message")
+        if not packet then
+            logger.error("Failed to receive packet")
             return
         end
 
-        local lines = strings.wrap(message, x_size)
-        -- reset the cursor position
-        term.setCursorPos(1, y_size)
-
-        for i = 1, #lines do
-            -- write the line
-            write(lines[i])
-
-            -- reset the cursor position
-            term.setCursorPos(1, y_size)
-
-            -- scroll the terminal up
-            term.scroll(1)
+        if packet.type ~= "update" then
+            basalt.debug("Received invalid packet type")
+            return
         end
 
-        write("~: ")
+        basalt.debug("Received message from " .. packet.sender)
+        local message = textutils.serialize(packet.data.items)
+
+        if not message then
+            basalt.debug("Failed to receive message")
+            return
+        end
+
+        -- message has been validated
+
+        basalt.debug(message)
     end
 end
 
@@ -134,34 +120,55 @@ local function main_send()
 end
 
 -- Basalt stuff
-
-local basaltPath = "basalt.lua"
-if not(fs.exists(basaltPath))then
-    shell.run("pastebin run ESs1mg7P packed true "..basaltPath:gsub(".lua", ""))
-end
-
--- load basalt
-local basalt = require(basaltPath:gsub(".lua", ""))
+local screen_width, screen_height = term.getSize()
 
 local mainFrame = basalt.createFrame("mainFrame")
-    :setBackground(config.colors.main.bg)
+    :setBackground(gui_config.colors.main.bg)
     :show()
 
-local pushButton = mainFrame --> Basalt returns an instance of the object on most methods, to make use of "call-chaining"
-    :addButton("pushButton") --> This is an example of call chaining
-    :setPosition(2, 10)
-    :setText("Push to storage")
-    :onClick(pushAction)
-    :show()
+local commandThread = mainFrame:addThread()
+local updateThread = mainFrame:addThread()
+local receiveThead = mainFrame:addThread()
 
+local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 1, 14, "")
+    :setForeground(gui_config.colors.label.notice)
 
-local function main()
-    if not _initialize() then
-        logger.error("Failed to initialise")
-        return
-    end
-
-    parallel.waitForAny(main_receive, main_send)
+local function updateAction()
+    updateThread:start(function()
+        noticeLabel:setText("Updating items")
+        send_command("update", {})
+        noticeLabel:setText("Updated items")
+        sleep(0.1)
+    end)
 end
 
-main()
+local function pushAction()
+    local function pushAction()
+        -- basalt.debug("push")
+        noticeLabel:setText("Pushing all items")
+    
+        commandThread:start(function()
+            send_command("push", {})
+
+            noticeLabel:setText("Pushed all items")
+            updateAction()
+            sleep(0.1)
+        end)
+    end
+    
+end
+    
+
+local pushButton = gui.newButton(mainFrame, "pushButton", screen_width - gui_config.sizes.button.width - 1, 10, "Push to storage", pushAction)
+
+
+if not _initialize() then
+    logger.error("Failed to initialise")
+    return
+end
+
+receiveThead:start(main_receive)
+
+updateAction()
+
+basalt.autoUpdate()

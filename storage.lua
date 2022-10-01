@@ -11,7 +11,7 @@ local storage = require("afscript.storage.storage")
 local remote = require("afscript.core.remote")
 local logging = require("afscript.core.logging")
 local logger = logging.new("storage", logging.LEVEL.ERROR)
-local config = require("afscript.gui.config")
+local gui_config = require("afscript.gui.config")
 local gui = require("afscript.gui.gui")
 local basalt = require("afscript.gui.basalt")
 local helper = require("afscript.core.helper")
@@ -28,7 +28,7 @@ end
 
 -- render everything
 local mainFrame = basalt.createFrame("mainFrame")
-    :setBackground(config.colors.main.bg)
+    :setBackground(gui_config.colors.main.bg)
     :show()
 
 
@@ -51,18 +51,18 @@ end
 local searchLabel = gui.newLabel(mainFrame, "searchBoxLabel", 3, 3, "Storage", 2)
 
 local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 24, 14, "")
-    :setForeground(config.colors.label.notice)
+    :setForeground(gui_config.colors.label.notice)
 
 local fullnessLabel = gui.newLabel(mainFrame, "fullnessLabel", 24, 17, "")
-    :setForeground(config.colors.bar.label)
+    :setForeground(gui_config.colors.bar.label)
 
 local fullnessBar = mainFrame
     :addProgressbar("fullnessBar")
     :setPosition(24, 18)
     :setSize(26, 1)
     :setProgress(0)
-    :setBackground(config.colors.bar.bg)
-    :setProgressBar(config.colors.bar.fg_low)
+    :setBackground(gui_config.colors.bar.bg)
+    :setProgressBar(gui_config.colors.bar.fg_low)
     :show()
 
 -- Search stuff
@@ -77,7 +77,7 @@ local searchBox = mainFrame
     :setInputType("text")
     :setPosition(3, 6)
     :setSize(20, 1)
-    :setDefaultText("Item pull search...", config.colors.input.fg, config.colors.input.bg)
+    :setDefaultText("Item pull search...", gui_config.colors.input.fg, gui_config.colors.input.bg)
     :onChange(function (self)
         local search = self:getValue()
 
@@ -93,9 +93,9 @@ local amountInput = mainFrame
     :setInputType("number")
     :setPosition(24, 10)
     :setSize(6, 1)
-    :setDefaultText("1", config.colors.input.fg, config.colors.input.bg)
-    :setBackground(config.colors.input.bg)
-    :setForeground(config.colors.input.fg)
+    :setDefaultText("1", gui_config.colors.input.fg, gui_config.colors.input.bg)
+    :setBackground(gui_config.colors.input.bg)
+    :setForeground(gui_config.colors.input.fg)
     :onChange(function (self)
         local search = self:getValue()
 
@@ -127,14 +127,14 @@ local itemList = mainFrame
     :setPosition(3, 8)
     :setSize(20, 11)
     :setScrollable(true)
-    :setBackground(config.colors.input.bg)
-    :setForeground(config.colors.input.fg)
+    :setBackground(gui_config.colors.input.bg)
+    :setForeground(gui_config.colors.input.fg)
     :onChange(function(self)
         local pullButton = mainFrame:getObject("pullButton")
         
         local item_index = self:getItemIndex()
         if item_index ~= nil then
-            pullButton:setBackground(config.colors.button.bg)
+            pullButton:setBackground(gui_config.colors.button.bg)
             pullButton:enable()
 
             local item = self:getItem(item_index)
@@ -147,16 +147,16 @@ local itemList = mainFrame
 
                 fullnessBar:setProgress(fullness)
                 if fullness < 50 then
-                    fullnessBar:setProgressBar(config.colors.bar.fg_low)
+                    fullnessBar:setProgressBar(gui_config.colors.bar.fg_low)
                 elseif fullness < 75 then
-                    fullnessBar:setProgressBar(config.colors.bar.fg_mid)
+                    fullnessBar:setProgressBar(gui_config.colors.bar.fg_mid)
                 else
-                    fullnessBar:setProgressBar(config.colors.bar.fg_high)
+                    fullnessBar:setProgressBar(gui_config.colors.bar.fg_high)
                 end
                 sleep(0.1)
             end)
         else
-            pullButton:setBackground(config.colors.button.bg_disabled)
+            pullButton:setBackground(gui_config.colors.button.bg_disabled)
             pullButton:disable()
         end
     end)
@@ -204,11 +204,11 @@ local function pushAction()
     end)
 end
 
-local pushButton = gui.newButton(mainFrame, "pushButton", screen_width - config.sizes.button.width - 1, 10, "Push to storage", pushAction)
+local pushButton = gui.newButton(mainFrame, "pushButton", screen_width - gui_config.sizes.button.width - 1, 10, "Push to storage", pushAction)
 
-local pullButton = gui.newButton(mainFrame, "pullButton", screen_width - config.sizes.button.width - 1, 6, "Pull from storage", pullAction)
+local pullButton = gui.newButton(mainFrame, "pullButton", screen_width - gui_config.sizes.button.width - 1, 6, "Pull from storage", pullAction)
     :disable()
-    :setBackground(config.colors.button.bg_disabled)
+    :setBackground(gui_config.colors.button.bg_disabled)
 
 
 -- initial list population
