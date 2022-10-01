@@ -254,6 +254,8 @@ local function _readMessages()
         local packet = remote.receive(PROTOCOL)
 
         if packet then
+            local do_update = true
+
             if packet.type == "push" then
                 basalt.debug("Received push packet")
                 pushAction()
@@ -269,33 +271,25 @@ local function _readMessages()
                     end)
                     sleep(0.1)
                 end)
-            elseif packet.type == "update" then
-                basalt.debug("Received update packet")
+            -- elseif packet.type == "update" then
+            --     basalt.debug("Received update packet")
+            else
+                basalt.debug("Received unknown packet")
+                do_update = false
+            end
+
+            if do_update then
                 readThread:start(function()
-                    local raw_items = storage.getInventory()
-
-                    items = {}
-                    for k, v in pairs(raw_items) do
-                        local c = 0
-                        for match in string.gmatch(k, '([^:]+)') do
-                            if c == 1 then
-                                items[match] = v
-                            end
-                            c = c + 1
-                        end
-                    end
-
+                    local raw_items = storage.getInventoryClean()
                     local fullness = storage.calculateFullnessPercentage()
 
                     local packet = remote.build_packet(PROTOCOL, "update", {
-                        items = items,
+                        items = raw_items,
                         fullness = fullness
                     })
 
-                    remote.send(PROTOCOL, packet, 17)  -- TODO: sender
+                    remote.broadcast(PROTOCOL, packet)
                 end)
-            else
-                basalt.debug("Received unknown packet")
             end
         else
             basalt.debug("No packet received")

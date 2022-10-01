@@ -8,6 +8,7 @@ local logging = require("afscript.core.logging")
 local logger = logging.new("storage-remote", logging.LEVEL.ERROR)
 local gui_config = require("afscript.gui.config")
 local gui = require("afscript.gui.gui")
+local helper = require("afscript.core.helper")
 
 
 local basaltPath = "basalt.lua"
@@ -27,6 +28,8 @@ local PARENT_PC = 9
 ---Variables
 
 local _initialized = false
+local items = { }
+local fullness = 0
 
 ---Functions
 
@@ -49,38 +52,6 @@ local function _initialize()
 end
 
 ---Main
-local function main_receive()
-    if not _initialized then
-        logger.error("Not initialised")
-        return false
-    end
-
-    while true do
-        local packet = remote.receive(PROTOCOL, {PARENT_PC})
-
-        if not packet then
-            logger.error("Failed to receive packet")
-            return
-        end
-
-        if packet.type ~= "update" then
-            basalt.debug("Received invalid packet type")
-            return
-        end
-
-        basalt.debug("Received message from " .. packet.sender)
-        local message = textutils.serialize(packet.data.items)
-
-        if not message then
-            basalt.debug("Failed to receive message")
-            return
-        end
-
-        -- message has been validated
-
-        basalt.debug(message)
-    end
-end
 
 ---Send a command to the parent computer
 ---@param command string _ The command to send
@@ -92,33 +63,6 @@ local function send_command(command, data)
     return true  -- TODO: check if the packet was sent successfully
 end
 
-local function main_send()
-    if not _initialized then
-        logger.error("Not initialised")
-        return false
-    end
-
-    local _, y_size = term.getSize()
-
-    while true do
-        write("~: ")
-        local message = read()
-        -- reset the cursor position
-        term.setCursorPos(1, y_size)
-
-        if message == "push" then
-            send_command("push", {})
-        elseif message == "pull" then
-            send_command("pull", {
-                search = "dirt",
-                count = 1
-            })
-        elseif message == "update" then
-            send_command("update", {})
-        end
-    end
-end
-
 -- Basalt stuff
 local screen_width, screen_height = term.getSize()
 
@@ -126,20 +70,167 @@ local mainFrame = basalt.createFrame("mainFrame")
     :setBackground(gui_config.colors.main.bg)
     :show()
 
+local function populateItemList(filter)
+    local itemList = mainFrame:getObject("itemList")
+    itemList:clear()
+    
+    for item_name, item_count in helper.spairs(items) do
+        if filter ~= "" then
+            if string.find(item_name, filter) then
+                itemList:addItem(item_name, nil, nil, item_count)
+            end
+        else
+            itemList:addItem(item_name, nil, nil, item_count)
+        end
+    end
+end
+    
+    
 local commandThread = mainFrame:addThread()
 local updateThread = mainFrame:addThread()
 local receiveThead = mainFrame:addThread()
 
-local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 1, 14, "")
+local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 4, 3, "")
     :setForeground(gui_config.colors.label.notice)
 
-local function updateAction()
-    updateThread:start(function()
-        noticeLabel:setText("Updating items")
-        send_command("update", {})
-        noticeLabel:setText("Updated items")
-        sleep(0.1)
+-- local fullnessLabel = gui.newLabel(mainFrame, "fullnessLabel", 3, 18, "")
+--     :setForeground(gui_config.colors.bar.label)
+
+local fullnessBar = mainFrame
+    :addProgressbar("fullnessBar")
+    :setPosition(3, 19)
+    :setSize(21, 1)
+    :setProgress(0)
+    :setBackground(gui_config.colors.bar.bg)
+    :setProgressBar(gui_config.colors.bar.fg_low)
+    :show()
+
+
+local searchBox = mainFrame
+    :addInput("searchBox")
+    :setInputType("text")
+    :setPosition(3, 2)
+    :setSize(21, 1)
+    :setDefaultText("Item pull search...", gui_config.colors.input.fg, gui_config.colors.input.bg)
+    :onChange(function (self)
+        local search = self:getValue()
+
+        populateItemList(search)
+        mainFrame:getObject("itemList"):setOffset(0)
     end)
+    :show()
+
+
+local amountLabel = gui.newLabel(mainFrame, "amountLabel", 3, 13, "Amount", 1)
+
+local amountInput = mainFrame
+    :addInput("amountInput")
+    :setInputType("number")
+    :setPosition(10, 13)
+    :setSize(6, 1)
+    :setDefaultText("1", gui_config.colors.input.fg, gui_config.colors.input.bg)
+    :setBackground(gui_config.colors.input.bg)
+    :setForeground(gui_config.colors.input.fg)
+    :onChange(function (self)
+        local search = self:getValue()
+
+        if search == "" then
+            search = "1"
+        end
+
+        local amount = tonumber(search)
+
+        local itemList = mainFrame:getObject("itemList")
+        local item = itemList:getItemIndex()
+
+        if item ~= nil then
+            local item_name = itemList:getItem(item).text
+            local item_count = items[item_name]
+
+            if amount > item_count then
+                self:setValue(item_count)
+            elseif amount < 1 then
+                self:setValue(1)
+            end
+        end
+    end)
+    :show()
+
+
+local itemList = mainFrame
+    :addList("itemList")
+    :setPosition(3, 4)
+    :setSize(21, 8)
+    :setScrollable(true)
+    :setBackground(gui_config.colors.input.bg)
+    :setForeground(gui_config.colors.input.fg)
+    :onChange(function(self)
+        local pullButton = mainFrame:getObject("pullButton")
+        
+        local item_index = self:getItemIndex()
+        if item_index ~= nil then
+            pullButton:setBackground(gui_config.colors.button.bg)
+            pullButton:enable()
+
+            local item = self:getItem(item_index)
+
+            amountInput:setValue(items[item.text])
+
+            -- fullnessLabel:setText("Fullness: " .. fullness .. "%")
+
+            fullnessBar:setProgress(fullness)
+            if fullness < 50 then
+                fullnessBar:setProgressBar(gui_config.colors.bar.fg_low)
+            elseif fullness < 75 then
+                fullnessBar:setProgressBar(gui_config.colors.bar.fg_mid)
+            else
+                fullnessBar:setProgressBar(gui_config.colors.bar.fg_high)
+            end
+        else
+            pullButton:setBackground(gui_config.colors.button.bg_disabled)
+            pullButton:disable()
+        end
+    end)
+    :show()
+
+local function main_receive()
+    if not _initialized then
+        logger.error("Not initialised")
+        return false
+    end
+
+    while true do
+        local packet = remote.receive(PROTOCOL, {PARENT_PC})
+
+        if not packet then
+            basalt.debug("Failed to receive packet")
+            return
+        end
+
+        if packet.type ~= "update" then
+            basalt.debug("Received invalid packet type")
+            return
+        end
+
+        basalt.debug("Received message from " .. packet.sender)
+
+        if not packet.data.items or not packet.data.fullness then
+            basalt.debug("Failed to receive valid update")
+            return
+        end
+
+        items = packet.data.items
+        fullness = packet.data.fullness
+        
+        populateItemList(searchBox:getValue())
+        noticeLabel:setText("Updated items")
+    end
+end 
+
+local function updateAction()
+    -- return 
+    noticeLabel:setText("Updating items")
+    send_command("update", {})
 end
 
 local function pushAction()
@@ -149,15 +240,40 @@ local function pushAction()
     commandThread:start(function()
         send_command("push", {})
 
-        noticeLabel:setText("Pushed all items")
+        noticeLabel:setText("Requested push")
         -- updateAction()
         sleep(0.1)
     end)
 end
-    
-    
 
-local pushButton = gui.newButton(mainFrame, "pushButton", screen_width - gui_config.sizes.button.width - 1, 10, "Push to storage", pushAction)
+local function pullAction()
+    local search_index = itemList:getItemIndex()
+    local search = itemList:getItem(search_index).text
+
+    local amount = amountInput:getValue()
+
+    -- basalt.debug("pull " .. search .. " " .. amount)
+    noticeLabel:setText("Pulling " .. amount .. " " .. search)
+
+    commandThread:start(function()
+        send_command("pull", {
+            search = search,
+            count = tonumber(amount)
+        })
+        noticeLabel:setText("Requested " .. amount .. " " .. search)
+        -- updateAction()
+        sleep(0.1)
+    end)
+end
+
+local pushButton = gui.newButton(mainFrame, "pushButton", 15, 15, "Push", pushAction)
+    :setSize(9, gui_config.sizes.button.height)
+
+
+local pullButton = gui.newButton(mainFrame, "pullButton", 3, 15, "Pull", pullAction)
+    :disable()
+    :setBackground(gui_config.colors.button.bg_disabled)
+    :setSize(9, gui_config.sizes.button.height)
 
 
 if not _initialize() then
@@ -167,6 +283,6 @@ end
 
 receiveThead:start(main_receive)
 
--- updateAction()
+updateAction()
 
 basalt.autoUpdate()
