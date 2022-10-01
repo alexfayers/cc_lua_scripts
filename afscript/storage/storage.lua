@@ -278,6 +278,23 @@ local function getInventory()
     return item_table
 end
 
+local function getInventoryClean()
+    local raw_items = getInventory()
+
+    local items = {}
+    for k, v in pairs(raw_items) do
+        local c = 0
+        for match in string.gmatch(k, '([^:]+)') do
+            if c == 1 then
+                items[match] = v
+            end
+            c = c + 1
+        end
+    end
+
+    return items
+end
+
 local function getInventoryFromFile()
     local file = fs.open(INVENTORY_FILE, "r")
     if file == nil then
@@ -373,5 +390,6 @@ return {
     getInventory = getInventory,
     getInventoryFromFile = getInventoryFromFile,
     getStorageItemCount = getStorageItemCount,
-    calculateFullnessPercentage = calculateFullnessPercentage
+    calculateFullnessPercentage = calculateFullnessPercentage,
+    getInventoryClean = getInventoryClean
 }

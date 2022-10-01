@@ -117,7 +117,8 @@ local function _update_library(options)
     local submodules = options.submodules or {
         "core",
         "meta",
-        "turtle"
+        "turtle",
+        "gui"
     }
 
     local tree_url = "https://api.github.com/repos/alexfayers/cc_lua_scripts/git/trees/main?recursive=1&abc=" .. os.date("%H%M%S")

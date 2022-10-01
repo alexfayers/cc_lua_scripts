@@ -10,6 +10,7 @@ local logger = logging.new("storage-remote", logging.LEVEL.ERROR)
 ---Constants
 
 local PROTOCOL = "alex_storage"
+local PARENT_PC = 9
 
 ---Variables
 
@@ -37,13 +38,13 @@ end
 
 ---Receive a message from a computer
 ---@return string|nil _ The message received
-local function receive_message()
+local function receive_packet()
     if not _initialized then
         logger.error("Not initialised")
         return nil
     end
 
-    local packet = remote.receive(PROTOCOL, {9})
+    local packet = remote.receive(PROTOCOL, {PARENT_PC})
 
     if not packet then
         logger.error("Failed to receive packet")
@@ -69,7 +70,7 @@ local function main_receive()
     local x_size, y_size = term.getSize()
 
     while true do
-        local message = receive_message()
+        local message = receive_packet()
 
         if not message then
             logger.error("Failed to receive message")
@@ -95,6 +96,16 @@ local function main_receive()
     end
 end
 
+---Send a command to the parent computer
+---@param command string _ The command to send
+---@param data table _ The data to send
+---@return boolean _ Whether the command was sent successfully or not
+local function send_command(command, data)
+    local packet = remote.build_packet(PROTOCOL, command, data)
+    remote.send(PROTOCOL, packet, PARENT_PC)
+    return true  -- TODO: check if the packet was sent successfully
+end
+
 local function main_send()
     if not _initialized then
         logger.error("Not initialised")
@@ -110,20 +121,39 @@ local function main_send()
         term.setCursorPos(1, y_size)
 
         if message == "push" then
-            local packet = remote.build_packet(PROTOCOL, "push", {})
-            remote.send(PROTOCOL, packet, 9)
+            send_command("push", {})
         elseif message == "pull" then
-            local packet = remote.build_packet(PROTOCOL, "pull", {
+            send_command("pull", {
                 search = "dirt",
                 count = 1
             })
-            remote.send(PROTOCOL, packet, 9)
         elseif message == "update" then
-            local packet = remote.build_packet(PROTOCOL, "update", {})
-            remote.send(PROTOCOL, packet, 9)
+            send_command("update", {})
         end
     end
 end
+
+-- Basalt stuff
+
+local basaltPath = "basalt.lua"
+if not(fs.exists(basaltPath))then
+    shell.run("pastebin run ESs1mg7P packed true "..basaltPath:gsub(".lua", ""))
+end
+
+-- load basalt
+local basalt = require(basaltPath:gsub(".lua", ""))
+
+local mainFrame = basalt.createFrame("mainFrame")
+    :setBackground(config.colors.main.bg)
+    :show()
+
+local pushButton = mainFrame --> Basalt returns an instance of the object on most methods, to make use of "call-chaining"
+    :addButton("pushButton") --> This is an example of call chaining
+    :setPosition(2, 10)
+    :setText("Push to storage")
+    :onClick(pushAction)
+    :show()
+
 
 local function main()
     if not _initialize() then

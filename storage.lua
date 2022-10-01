@@ -1,9 +1,3 @@
--- download basalt if it's not downloaded already
-local basaltPath = "basalt.lua"
-if not(fs.exists(basaltPath))then
-    shell.run("pastebin run ESs1mg7P packed true "..basaltPath:gsub(".lua", ""))
-end
-
 -- download storage if it's not downloaded already
 local update = require("afscript.meta.update")
 update.update_library({
@@ -12,140 +6,37 @@ update.update_library({
     }
 })
 
--- load basalt
-local basalt = require(basaltPath:gsub(".lua", ""))
-
 -- load storage
 local storage = require("afscript.storage.storage")
 local remote = require("afscript.core.remote")
 local logging = require("afscript.core.logging")
 local logger = logging.new("storage", logging.LEVEL.ERROR)
-
--- setup config
-local config = {
-    colors = {
-        main = {
-            bg = colors.lightBlue,
-            fg = colors.white
-        },
-        button = {
-            bg = colors.white,
-            fg = colors.black,
-            bg_press = colors.lightGray,
-            fg_press = colors.gray,
-            bg_disabled = colors.lightGray,
-        },
-        input = {
-            bg = colors.white,
-            fg = colors.black
-        },
-        label = {
-            bg = colors.white,
-            fg = colors.black,
-            notice = colors.orange,
-        },
-        bar = {
-            bg = colors.white,
-            fg_low = colors.green,
-            fg_med = colors.orange,
-            fg_high = colors.red,
-            label = colors.orange
-        },
-    },
-    sizes = {
-        button = {
-            width = 19,
-            height = 3
-        }
-    }
-}
+local config = require("afscript.gui.config")
+local gui = require("afscript.gui.gui")
+local basalt = require("afscript.gui.basalt")
+local helper = require("afscript.core.helper")
 
 local screen_width, screen_height = term.getSize()
 local items = { }
 
--- create a new gui
-local function setupButtonColoring(self, event, button, x, y)
-    self:setHorizontalAlign("center")
-    self:setVerticalAlign("center")
-    
-    self:setBackground(config.colors.button.bg)
-    self:setForeground(config.colors.button.fg)
-
-    local text = self:getValue()
-    local width
-
-    if string.len(text) > config.sizes.button.width then
-        width = string.len(text) + 2
-    else
-        width = config.sizes.button.width
-    end
-
-    self:setSize(width, config.sizes.button.height)
-
-    self:onClick(function()
-        self:setBackground(config.colors.button.bg_press) 
-        self:setForeground(config.colors.button.fg_press)
-    end)
-    self:onClickUp(function() 
-        self:setBackground(config.colors.button.bg)
-        self:setForeground(config.colors.button.fg)
-    end)
-    self:onLoseFocus(function() 
-        self:setBackground(config.colors.button.bg)
-        self:setForeground(config.colors.button.fg)
-    end)
+-- storage helper functions
+local function updateItems()
+    items = storage.getInventoryClean()
 end
 
+-- create a new gui
 
 -- render everything
 local mainFrame = basalt.createFrame("mainFrame")
     :setBackground(config.colors.main.bg)
     :show()
 
-local function updateItems()
-    local raw_items = storage.getInventory()
-
-    items = {}
-    for k, v in pairs(raw_items) do
-        local c = 0
-        for match in string.gmatch(k, '([^:]+)') do
-            if c == 1 then
-                items[match] = v
-            end
-            c = c + 1
-        end
-    end
-end
-
--- from https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
-local function spairs(t, order)
-    -- collect the keys
-    local keys = {}
-    for k in pairs(t) do keys[#keys+1] = k end
-
-    -- if order function given, sort by it by passing the table and keys a, b,
-    -- otherwise just sort the keys 
-    if order then
-        table.sort(keys, function(a,b) return order(t, a, b) end)
-    else
-        table.sort(keys)
-    end
-
-    -- return the iterator function
-    local i = 0
-    return function()
-        i = i + 1
-        if keys[i] then
-            return keys[i], t[keys[i]]
-        end
-    end
-end
 
 local function populateItemList(filter)
     local itemList = mainFrame:getObject("itemList")
     itemList:clear()
     
-    for item_name, item_count in spairs(items) do
+    for item_name, item_count in helper.spairs(items) do
         if filter ~= "" then
             if string.find(item_name, filter) then
                 itemList:addItem(item_name, nil, nil, item_count)
@@ -156,33 +47,14 @@ local function populateItemList(filter)
     end
 end
     
--- title label
-local searchLabel = mainFrame
-    :addLabel("searchBoxLabel")
-    :setPosition(3, 3)
-    :setText("Storage")
-    :setFontSize(2)
-    :setBackground(config.colors.main.bg)
-    :setForeground(config.colors.main.fg)
-    :show()
+-- labels
+local searchLabel = gui.newLabel(mainFrame, "searchBoxLabel", 3, 3, "Storage", 2)
 
-
--- notice label
-local noticeLabel = mainFrame
-    :addLabel("noticeLabel")
-    :setPosition(24, 14)
-    :setText("")
-    -- :setBackground(config.colors.main.bg)
+local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 24, 14, "")
     :setForeground(config.colors.label.notice)
-    :show()
 
-local fullnessLabel = mainFrame
-    :addLabel("fullnessLabel")
-    :setPosition(24, 17)
-    :setText("")
-    -- :setBackground(config.colors.main.bg)
+local fullnessLabel = gui.newLabel(mainFrame, "fullnessLabel", 24, 17, "")
     :setForeground(config.colors.bar.label)
-    :show()
 
 local fullnessBar = mainFrame
     :addProgressbar("fullnessBar")
@@ -214,15 +86,7 @@ local searchBox = mainFrame
     end)
     :show()
 
-
-local amountLabel = mainFrame
-    :addLabel("amountLabel")
-    :setPosition(24, 8)
-    :setText("Amount")
-    :setFontSize(1)
-    :setBackground(config.colors.main.bg)
-    :setForeground(config.colors.main.fg)
-    :show()
+local amountLabel = gui.newLabel(mainFrame, "amountLabel", 24, 8, "Amount", 1)
 
 local amountInput = mainFrame
     :addInput("amountInput")
@@ -299,6 +163,7 @@ local itemList = mainFrame
     :show()
 
 
+-- pull stuff
 
 local function pullAction()
     local search_index = itemList:getItemIndex()
@@ -321,15 +186,6 @@ local function pullAction()
     end)
 end
 
-local pullButton = mainFrame
-    :addButton("pullButton")
-    :setPosition(screen_width - config.sizes.button.width - 1, 6) 
-    :setText("Pull from storage")
-    :onClick(pullAction)
-    :setBackground(config.colors.button.bg_disabled)
-    :disable()
-    :show()
-
 -- Push stuff
 
 local function pushAction()
@@ -348,18 +204,12 @@ local function pushAction()
     end)
 end
 
-local pushButton = mainFrame --> Basalt returns an instance of the object on most methods, to make use of "call-chaining"
-    :addButton("pushButton") --> This is an example of call chaining
-    :setPosition(screen_width - config.sizes.button.width - 1, 10)
-    :setText("Push to storage")
-    :onClick(pushAction)
-    :show()
+local pushButton = gui.newButton(mainFrame, "pushButton", screen_width - config.sizes.button.width - 1, 10, "Push to storage", pushAction)
 
+local pullButton = gui.newButton(mainFrame, "pullButton", screen_width - config.sizes.button.width - 1, 6, "Pull from storage", pullAction)
+    :disable()
+    :setBackground(config.colors.button.bg_disabled)
 
-setupButtonColoring(pullButton)
-pullButton:setBackground(config.colors.button.bg_disabled)
-
-setupButtonColoring(pushButton)
 
 -- initial list population
 updateItems()
