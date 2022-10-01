@@ -439,7 +439,7 @@ local function _readMessages()
                         items = items
                     })
 
-                    remote.send(PROTOCOL, packet, packet.sender)
+                    remote.send(PROTOCOL, packet, 17)  -- TODO: sender
                 end)
             else
                 basalt.debug("Received unknown packet")

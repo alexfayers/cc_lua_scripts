@@ -56,7 +56,7 @@ local function receive_message()
     end
 
     logger.success("Received message from " .. packet.sender)
-    return packet.sender .. ": " .. packet.data.items
+    return textutils.serialize(packet.data.items)
 end
 
 ---Main
