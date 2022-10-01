@@ -193,6 +193,26 @@ local itemList = mainFrame
     end)
     :show()
 
+local function disableButtons()
+    local pullButton = mainFrame:getObject("pullButton")
+    pullButton:setBackground(gui_config.colors.button.bg_disabled)
+    pullButton:disable()
+
+    local pushButton = mainFrame:getObject("pushButton")
+    pushButton:setBackground(gui_config.colors.button.bg_disabled)
+    pushButton:disable()
+end
+
+local function enableButtons()
+    local pullButton = mainFrame:getObject("pullButton")
+    pullButton:setBackground(gui_config.colors.button.bg)
+    pullButton:enable()
+
+    local pushButton = mainFrame:getObject("pushButton")
+    pushButton:setBackground(gui_config.colors.button.bg)
+    pushButton:enable()
+end
+
 local function main_receive()
     if not _initialized then
         logger.error("Not initialised")
@@ -212,7 +232,7 @@ local function main_receive()
             return
         end
 
-        basalt.debug("Received message from " .. packet.sender)
+        -- basalt.debug("Received message from " .. packet.sender)
 
         if not packet.data.items or not packet.data.fullness then
             basalt.debug("Failed to receive valid update")
@@ -224,6 +244,7 @@ local function main_receive()
         
         populateItemList(searchBox:getValue())
         noticeLabel:setText("Updated items")
+        enableButtons()
     end
 end 
 
@@ -241,6 +262,7 @@ local function pushAction()
         send_command("push", {})
 
         noticeLabel:setText("Requested push")
+        disableButtons()
         -- updateAction()
         sleep(0.1)
     end)
@@ -261,6 +283,7 @@ local function pullAction()
             count = tonumber(amount)
         })
         noticeLabel:setText("Requested " .. amount .. " " .. search)
+        disableButtons()
         -- updateAction()
         sleep(0.1)
     end)
@@ -271,8 +294,6 @@ local pushButton = gui.newButton(mainFrame, "pushButton", 15, 15, "Push", pushAc
 
 
 local pullButton = gui.newButton(mainFrame, "pullButton", 3, 15, "Pull", pullAction)
-    :disable()
-    :setBackground(gui_config.colors.button.bg_disabled)
     :setSize(9, gui_config.sizes.button.height)
 
 
@@ -283,6 +304,7 @@ end
 
 receiveThead:start(main_receive)
 
+disableButtons()
 updateAction()
 
 basalt.autoUpdate()
