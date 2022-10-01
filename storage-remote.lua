@@ -143,20 +143,18 @@ local function updateAction()
 end
 
 local function pushAction()
-    local function pushAction()
-        -- basalt.debug("push")
-        noticeLabel:setText("Pushing all items")
-    
-        commandThread:start(function()
-            send_command("push", {})
+    -- basalt.debug("push")
+    noticeLabel:setText("Pushing all items")
 
-            noticeLabel:setText("Pushed all items")
-            updateAction()
-            sleep(0.1)
-        end)
-    end
-    
+    commandThread:start(function()
+        send_command("push", {})
+
+        noticeLabel:setText("Pushed all items")
+        updateAction()
+        sleep(0.1)
+    end)
 end
+    
     
 
 local pushButton = gui.newButton(mainFrame, "pushButton", screen_width - gui_config.sizes.button.width - 1, 10, "Push to storage", pushAction)
