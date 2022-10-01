@@ -271,8 +271,8 @@ local function _readMessages()
                     end)
                     sleep(0.1)
                 end)
-            -- elseif packet.type == "update" then
-            --     basalt.debug("Received update packet")
+            elseif packet.type == "update" then
+                basalt.debug("Received update packet")
             else
                 basalt.debug("Received unknown packet")
                 do_update = false
