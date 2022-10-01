@@ -153,7 +153,7 @@ local itemList = mainFrame
                 else
                     fullnessBar:setProgressBar(config.colors.bar.fg_high)
                 end
-                os.sleep(0.1)
+                sleep(0.1)
             end)
         else
             pullButton:setBackground(config.colors.button.bg_disabled)
@@ -180,9 +180,9 @@ local function pullAction()
         readThread:start(function()
             updateItems()
             populateItemList(searchBox:getValue())
-            os.sleep(0.1)
+            sleep(0.1)
         end)
-        os.sleep(0.1)
+        sleep(0.1)
     end)
 end
 
@@ -198,9 +198,9 @@ local function pushAction()
         readThread:start(function()
             updateItems()
             populateItemList(searchBox:getValue())
-            os.sleep(0.1)
+            sleep(0.1)
         end)
-        os.sleep(0.1)
+        sleep(0.1)
     end)
 end
 
@@ -265,9 +265,9 @@ local function _readMessages()
                     readThread:start(function()
                         updateItems()
                         populateItemList(searchBox:getValue())
-                        os.sleep(0.1)
+                        sleep(0.1)
                     end)
-                    os.sleep(0.1)
+                    sleep(0.1)
                 end)
             elseif packet.type == "update" then
                 basalt.debug("Received update packet")
