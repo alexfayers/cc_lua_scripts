@@ -7,6 +7,7 @@ local logger = logging.new("autocrafter", logging.LEVEL.DEBUG)
 
 local recipes = require("afscript.craft.recipe")
 local remote = require("afscript.core.remote")
+local pretty = require("cc.pretty")
 
 local PROTOCOL = "storage"  -- TODO: setting
 local PARENT_PC = 4  -- TODO: setting
@@ -46,7 +47,13 @@ end
 local function send_command(command, data)
     local packet = remote.build_packet(PROTOCOL, command, data)
     remote.send(PROTOCOL, packet, PARENT_PC)
-    return true  -- TODO: check if the packet was sent successfully
+    local res = remote.receive(PROTOCOL, nil, 5)  -- once we receive this update, we know the parent has received the command
+
+    if res then
+        return true
+    else
+        return false
+    end
 end
 
 ---Check if the wrapped chest has a count of a specific item
@@ -111,7 +118,7 @@ local function craft(item)
 
     -- ensure the chest is empty
     send_command("push", {})
-    sleep(1)
+    -- sleep(1)
 
     -- check if the chest has the required items, and request them if not
     for ingredient, required_count in pairs(requirements) do
@@ -122,29 +129,15 @@ local function craft(item)
         logger.info("Checking " .. ingredient)
 
         local requirement_met = false
-        local MAX_LOOPS = 5
-        local current_loop = 0
 
-        while true do
-            requirement_met = checkIfChestContains(chest, ingredient, required_count)
+        requirement_met = checkIfChestContains(chest, ingredient, required_count)
 
-            if requirement_met or current_loop >= MAX_LOOPS then
-                break
-            end
-
-            if current_loop == 1 then
-                -- first check failed, so pull the items
-                send_command("pull", {
-                    search = ingredient,
-                    count = tonumber(required_count)
-                })
-            end
-
-            if current_loop >= 1 then
-                -- wait for the items to be pulled
-                sleep(1)
-            end
-            current_loop = current_loop + 1
+        if not requirement_met then
+            logger.info("Requesting " .. ingredient)
+            requirement_met = send_command("pull", {
+                search = ingredient,
+                count = tonumber(required_count)
+            })
         end
 
         if not requirement_met then
