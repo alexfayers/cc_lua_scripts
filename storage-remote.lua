@@ -28,7 +28,7 @@ settings.define("storage.parent_id", {
 settings.define("storage.network_name", {
     description = "Name of the protocol to use for networked control of the storage system. Must be the same for child and parent computers.",
     default=nil,
-    type = "number"
+    type = "string"
 })
 
 ---Constants
