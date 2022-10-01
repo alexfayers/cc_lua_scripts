@@ -385,7 +385,9 @@ local function publicPullFromStorage(search_term, search_requested_count)
         pullItemsFromStorage(search_term, search_requested_count)
     else
         logger.warn("Not enough items to pull. Have " .. item_count .. " '".. search_term .. "', need " .. search_requested_count)
+        return false
     end
+    return true
 end
 
 return {
