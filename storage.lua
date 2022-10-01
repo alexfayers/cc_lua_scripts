@@ -22,9 +22,20 @@ local fullness = 0
 
 -- remote control stuff
 
+settings.define("storage.network_name", {
+    description = "Name of the protocol to use for networked control of the storage system. Must be the same for child and parent computers.",
+    default=nil,
+    type = "number"
+})
+
 ---Constants
 
-local PROTOCOL = "alex_storage"
+local PROTOCOL = settings.get("storage.network_name")
+
+if not PROTOCOL then
+    logger.error("No network name specified in settings. Please run 'set storage.network_name {NAME}'.")
+    error("No network name specified in settings.")
+end
 
 ---Variables
 

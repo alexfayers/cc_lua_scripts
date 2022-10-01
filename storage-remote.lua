@@ -19,11 +19,33 @@ end
 -- load basalt
 local basalt = require(basaltPath:gsub(".lua", ""))
 
+settings.define("storage.parent_id", {
+    description = "ID for the parent computer",
+    default=nil,
+    type = "number"
+})
+
+settings.define("storage.network_name", {
+    description = "Name of the protocol to use for networked control of the storage system. Must be the same for child and parent computers.",
+    default=nil,
+    type = "number"
+})
 
 ---Constants
 
-local PROTOCOL = "alex_storage"
-local PARENT_PC = 9
+local PROTOCOL = settings.get("storage.network_name")
+local PARENT_PC = settings.get("storage.parent_id")
+
+if not PROTOCOL then
+    logger.error("No network name specified in settings. Please run 'set storage.network_name {NAME}'.")
+    error("No network name specified in settings.")
+end
+
+if not PARENT_PC then
+    logger.error("No parent ID specified in settings. Please run 'set storage.parent_id {ID}'.")
+    error("No parent ID specified in settings.")
+end
+
 
 ---Variables
 
@@ -87,10 +109,9 @@ end
     
     
 local commandThread = mainFrame:addThread()
-local updateThread = mainFrame:addThread()
 local receiveThead = mainFrame:addThread()
 
-local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 4, 3, "")
+local noticeLabel = gui.newLabel(mainFrame, "noticeLabel", 3, 1, "")
     :setForeground(gui_config.colors.label.notice)
 
 -- local fullnessLabel = gui.newLabel(mainFrame, "fullnessLabel", 3, 18, "")
