@@ -150,7 +150,7 @@ local function pushAction()
         send_command("push", {})
 
         noticeLabel:setText("Pushed all items")
-        updateAction()
+        -- updateAction()
         sleep(0.1)
     end)
 end
@@ -167,6 +167,6 @@ end
 
 receiveThead:start(main_receive)
 
-updateAction()
+-- updateAction()
 
 basalt.autoUpdate()
