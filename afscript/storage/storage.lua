@@ -257,12 +257,16 @@ end
 local function getInventory()
     local item_table = {}
 
+    local occupied_slots = 0
+    local total_slots = 0
+
     for i = 1, #storage_chests do
         -- get the current chest
         local current_chest = peripheral.wrap(storage_chests[i])
         -- get the items in the chest
         local items = current_chest.list()
-        -- local slots = current_chest.size()
+        occupied_slots = occupied_slots + #items
+        total_slots = total_slots + current_chest.size()
 
         -- loop through all the items
         for _, current_item in pairs(items) do
@@ -275,11 +279,13 @@ local function getInventory()
         end
     end
 
-    return item_table
+    local fullness = math.floor((occupied_slots / total_slots) * 100)
+
+    return item_table, fullness
 end
 
 local function getInventoryClean()
-    local raw_items = getInventory()
+    local raw_items, fullness = getInventory()
 
     local items = {}
     for k, v in pairs(raw_items) do
@@ -292,7 +298,7 @@ local function getInventoryClean()
         end
     end
 
-    return items
+    return items, fullness
 end
 
 local function getInventoryFromFile()
@@ -307,7 +313,7 @@ end
 
 local function saveInventoryToCompletionFile(item_table)
     if item_table == nil then
-        item_table = getInventory()
+        item_table, _ = getInventory()
     end
 
     -- write the pure item table to a file for auto completion
@@ -329,7 +335,7 @@ end
 
 local function fullInventoryCheck()
     -- Dump all items within storage to a file
-    local item_table = getInventory()
+    local item_table, _ = getInventory()
 
     -- print the table
     -- pretty.print(pretty.pretty(item_table))

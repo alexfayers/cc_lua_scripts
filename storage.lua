@@ -18,6 +18,7 @@ local helper = require("afscript.core.helper")
 
 local screen_width, screen_height = term.getSize()
 local items = { }
+local fullness = 0
 
 -- remote control stuff
 
@@ -28,12 +29,6 @@ local PROTOCOL = "alex_storage"
 ---Variables
 
 local _initialized = false
-
-
--- storage helper functions
-local function updateItems()
-    items = storage.getInventoryClean()
-end
 
 -- create a new gui
 
@@ -174,6 +169,26 @@ local itemList = mainFrame
     :show()
 
 
+local function sendRemoteUpdate()
+    readThread:start(function()
+        local packet = remote.build_packet(PROTOCOL, "update", {
+            items = items,
+            fullness = fullness
+        })
+
+        remote.broadcast(PROTOCOL, packet)
+        sleep(0.1)
+    end)
+end
+    
+local function updateItems()
+    items, fullness = storage.getInventoryClean()
+    populateItemList(searchBox:getValue())
+    sendRemoteUpdate()
+end
+
+
+
 -- pull stuff
 
 local function pullAction()
@@ -190,7 +205,6 @@ local function pullAction()
         noticeLabel:setText("Pulled " .. amount .. " " .. search)
         readThread:start(function()
             updateItems()
-            populateItemList(searchBox:getValue())
             sleep(0.1)
         end)
         sleep(0.1)
@@ -199,20 +213,6 @@ end
 
 -- Push stuff
 
-local function sendRemoteUpdate()
-    readThread:start(function()
-        local raw_items = storage.getInventoryClean()
-        local fullness = storage.calculateFullnessPercentage()
-
-        local packet = remote.build_packet(PROTOCOL, "update", {
-            items = raw_items,
-            fullness = fullness
-        })
-
-        remote.broadcast(PROTOCOL, packet)
-        sleep(0.1)
-    end)
-end
 
 
 local function pushAction()
@@ -224,8 +224,6 @@ local function pushAction()
         noticeLabel:setText("Pushed all items")
         readThread:start(function()
             updateItems()
-            populateItemList(searchBox:getValue())
-            sendRemoteUpdate()
             sleep(0.1)
         end)
         sleep(0.1)
@@ -241,7 +239,6 @@ local pullButton = gui.newButton(mainFrame, "pullButton", screen_width - gui_con
 
 -- initial list population
 updateItems()
-populateItemList("")
 
 
 ---Functions
