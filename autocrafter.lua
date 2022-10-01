@@ -95,9 +95,10 @@ end
 ---Craft an item by calculating the required ingredients
 ---and requesting them from the storage system
 ---then crafting the item
----@param item string
+---@param item string the item to craft
+---@param craft_count number number of items to craft
 ---@return boolean _ Whether the crafting was successful or not
-local function craft(item)
+local function craft(item, craft_count)
     local recipe = recipes.get(item)
     if not recipe then
         logger.error("No recipe found for item")
@@ -122,6 +123,8 @@ local function craft(item)
 
     -- check if the chest has the required items, and request them if not
     for ingredient, required_count in pairs(requirements) do
+        required_count = required_count * tonumber(craft_count)
+
         for match in string.gmatch(ingredient, '([^:]+)') do
             ingredient = match
         end
@@ -150,6 +153,7 @@ local function craft(item)
     end
 
     logger.info("Got all ingredients")
+    send_command("push", {})  -- push any extra items back to the storage system
     logger.info("Clearing crafting grid")
 
     -- clear the crafting grid
@@ -175,12 +179,14 @@ local function craft(item)
 
     logger.info("Populating crafting grid with recipe")
 
+    local fetched_counts = {}
+
     for row=1,3 do
         for column=1,3 do
             local recipe_item = recipe[row][column]
             local recipe_slot = (row - 1) * 4 + column
 
-            if recipe_item then
+            if recipe_item and recipe_item ~= "" then
                 logger.info("Moving " .. recipe_item .. " to slot " .. recipe_slot)
 
                 for _, slot in pairs(NON_CRAFTING_SLOTS) do
@@ -189,15 +195,22 @@ local function craft(item)
                         local name = item.name
                         if name == recipe_item then
                             turtle.select(slot)
-                            if not turtle.transferTo(recipe_slot, 1) then
-                                -- something's in the way, move it
-                                turtle.select(recipe_slot)
-                                if not moveOutOfTheWay() then
-                                    logger.error("Failed to move item out of the way")
-                                    return false
+                            local item_details = turtle.getItemDetail(slot)
+
+                            if not fetched_counts[recipe_item] then
+                                fetched_counts[recipe_item] = item_details.count
+                            else
+                                if fetched_counts[recipe_item] < item_details.count then
+                                    fetched_counts[recipe_item] = item_details.count
                                 end
-                                turtle.select(slot)
-                                turtle.transferTo(recipe_slot, 1)
+                            end
+
+                            local count_to_move = math.floor(fetched_counts[recipe_item] / requirements[recipe_item])
+
+                            if not turtle.transferTo(recipe_slot, count_to_move) then
+                                -- something's in the way
+                                logger.error("Failed to move item - maybe you asked for too many items at once?")
+                                return false
                             end
                             break
                         end
@@ -211,6 +224,16 @@ local function craft(item)
     end
     turtle.select(1)
 
+    -- clear non-crafting slots
+    for _, slot in pairs(NON_CRAFTING_SLOTS) do
+        if turtle.getItemDetail(slot) then
+            turtle.select(slot)
+            turtle.drop()
+        end
+    end
+    send_command("push", {})  -- push any extra items back to the storage system
+
+
     logger.info("Crafting")
 
     if not turtle.craft() then
@@ -218,16 +241,36 @@ local function craft(item)
         return false
     end
 
-    logger.success("Crafted item")
+    logger.success("Crafted")
+
+    logger.info("Pushing into storage")
+
+    for slot=1,16 do
+        if turtle.getItemDetail(slot) then
+            turtle.select(slot)
+            turtle.drop()
+        end
+    end
+    send_command("push", {})  -- push any extra items back to the storage system
+
     return true
 end
 
 if _initialize() then
     local args = {...}
 
-    if #args == 0 then
+    if #args < 1 then
         logger.error("No item specified")
         return
     end
-    craft(args[1])
+    if #args < 2 then
+        logger.error("No count specified")
+        return
+    end
+    if #args > 2 then
+        logger.error("Too many arguments")
+        return
+    end
+
+    craft(args[1], args[2])
 end
