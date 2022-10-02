@@ -8,6 +8,7 @@ local _initialized = false
 local function open()
     if turtle.getItemCount() >= 2 then
         logger.error("Door is already open.")
+        return
     end
     
     logger.info("Opening door...")
@@ -30,6 +31,7 @@ end
 local function close()
     if turtle.getItemCount() < 2 then
         logger.error("Door is already closed.")
+        return
     end
     
     logger.info("Closing door...")
