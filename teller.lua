@@ -76,3 +76,8 @@ if args[1] == "host" then  -- not using as library
 
     getCommands()
 end
+
+return {
+    initialize = _initialize,
+    tell = tell
+}
