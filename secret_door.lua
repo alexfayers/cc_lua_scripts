@@ -1,6 +1,9 @@
 local logging = require("afscript.core.logging")
 local logger = logging.new("secret_door")
+local remote = require("afscript.core.remote")
 
+local PROTOCOL = "secret_door"
+local _initialized = false
 
 local function open()
     if turtle.getItemCount() >= 2 then
@@ -46,13 +49,45 @@ local function close()
     logger.info("Door closed.")
 end
 
+---Initialise the network system
+---@return boolean _ Whether the initialisation was successful or not
+local function _initialize()
+    if _initialized then
+        logger.error("Already initialised")
+        return false
+    end
+
+    if not remote.initialize(PROTOCOL) then
+        logger.error("Failed to initialise remote")
+        return false
+    end
+
+    _initialized = true
+    logger.success("Initialised")
+    return true
+end
+
+
 local function main()
+    if not _initialize() then
+        logger.error("Failed to initialise modem")
+        return
+    end
+
     while true do
-        local event = {os.pullEvent("computer_command")}
-        if event[2] == "open" then
+        local packet = remote.receive(PROTOCOL)
+
+        if not packet then
+            logger.error("Failed to receive packet")
+            return nil
+        end
+    
+        if packet.type == "open" then
             open()
-        elseif event[2] == "close" then
+        elseif packet.type == "close" then
             close()
+        else
+            logger.error("Unknown packet type: " .. packet.type)
         end
     end
 end
