@@ -6,6 +6,7 @@ local logger = logging.new("afscript.storage", logging.LEVEL.ERROR)
 -- define constants
 
 local INVENTORY_FILE = ".storage_completion.txt"
+local NO_PUSH_FILE = ".storage_no_push.txt"
 
 -- define setttings
 
@@ -63,6 +64,18 @@ _peripherals.modem.object = peripheral.find("modem")
 
 if _peripherals.modem.object == nil then
     error("No modem found")
+end
+
+-- read the non-push list
+
+local no_push_list = { }
+
+local no_push_file = fs.open(NO_PUSH_FILE, "r")
+
+if no_push_file then
+    for line in io.lines(NO_PUSH_FILE) do
+        table.insert(no_push_list, line)
+    end
 end
 
 -- get all the chests on the modem
@@ -170,13 +183,25 @@ local function pushItemsToStorage(slot_to_push, item_count)
     local moved_items = 0
 
     for i = 1, #storage_chests do
-        -- try to push the items from the main chest to the current chest
-        local items_pushed = _peripherals.chest_input.object.pushItems(storage_chests[i], slot_to_push)
-        
-        moved_items = moved_items + items_pushed
+        -- if the item is in the no push list, skip it
 
-        if moved_items >= item_count then
-            break
+        local do_push = true
+        for j = 1, #no_push_list do
+            if storage_chests[i] == no_push_list[j] then
+                do_push = false
+                break
+            end
+        end
+
+        if do_push then
+            -- try to push the items from the main chest to the current chest
+            local items_pushed = _peripherals.chest_input.object.pushItems(storage_chests[i], slot_to_push)
+            
+            moved_items = moved_items + items_pushed
+    
+            if moved_items >= item_count then
+                break
+            end
         end
     end
 
