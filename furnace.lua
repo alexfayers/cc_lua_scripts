@@ -153,6 +153,7 @@ local function pushItems(furnaces)
     end
 end
 
+local smeltingCompleteNotice = false
 local function pullItems(furnaces)
     local transferred = 0
 
@@ -162,6 +163,12 @@ local function pullItems(furnaces)
 
     if transferred > 0 then
         logger.info("Pulled " .. transferred .. " items from " .. #furnaces .. " furnaces.")
+        smeltingCompleteNotice = false
+    else
+        if not smeltingCompleteNotice then
+            logger.info("Smelting complete.")
+            smeltingCompleteNotice = true
+        end
     end
 end
 
@@ -205,7 +212,7 @@ parallel.waitForAll(
     function()
         while true do
             pullItems(furnaces)
-            sleep(1)
+            sleep(10)
         end
     end
 )
