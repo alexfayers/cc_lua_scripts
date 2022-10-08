@@ -183,9 +183,9 @@ local function pullItemsFromStorage(search_term, search_requested_count)
 
         -- loop through all the items
         for current_slot, current_item in pairs(items) do
-            threads[current_slot] = function ()
+            table.insert(threads, function ()
                 parallelChestPullSub(current_slot, current_item)
-            end
+            end)
         end
 
         parallel.waitForAll(table.unpack(threads))
@@ -193,10 +193,10 @@ local function pullItemsFromStorage(search_term, search_requested_count)
 
     local threads = {}
 
-    for i = 1, #storage_chests do
-        threads[i] = function ()
-            parallelChestPull(storage_chests[i])
-        end
+    for _, chest in pairs(storage_chests) do
+        table.insert(threads, function ()
+            parallelChestPull(chest)
+        end)
     end
 
     parallel.waitForAll(table.unpack(threads))
@@ -238,10 +238,10 @@ local function pushItemsToStorage(slot_to_push, item_count)
 
     local threads = {}
 
-    for i = 1, #storage_chests do
-        threads[i] = function ()
-            parallelPush(storage_chests[i])
-        end
+    for _, chest in pairs(storage_chests) do
+        table.insert(threads, function ()
+            parallelPush(chest)
+        end)
     end
 
     parallel.waitForAll(table.unpack(threads))
@@ -251,6 +251,7 @@ local function pushItemsToStorage(slot_to_push, item_count)
 end
 
 local function pushAllToStorage()
+    -- if this is threaded, there's race conditions because each thread is pushing to the same chests
     local transferred = 0
     local attempted_transfer = true
 
@@ -262,12 +263,16 @@ local function pushAllToStorage()
     local threads = {}
 
     for current_slot, current_item in pairs(_peripherals.chest_input.object.list()) do
-        threads[current_slot] = function ()
-            parallelPush(current_slot, current_item)
-        end
+        -- table.insert(threads, function ()
+        --     parallelPush(current_slot, current_item)
+        -- end)
+
+        transferred = transferred + pushItemsToStorage(current_slot, current_item.count)
+        attempted_transfer = true
+
     end
 
-    parallel.waitForAll(table.unpack(threads))
+    -- parallel.waitForAll(table.unpack(threads))
 
     if attempted_transfer then
         -- print()
@@ -327,10 +332,10 @@ local function getStorageItemCount(search_term)
 
     local threads = {}
 
-    for i = 1, #storage_chests do
-        threads[i] = function ()
-            pararllelItemCount(storage_chests[i])
-        end
+    for _, chest in pairs(storage_chests) do
+        table.insert(threads, function ()
+            pararllelItemCount(chest)
+        end)
     end
 
     parallel.waitForAll(table.unpack(threads))
@@ -368,10 +373,10 @@ local function getInventory()
 
     local threads = {}
 
-    for i = 1, #storage_chests do
-        threads[i] = function ()
-            parallelInventory(storage_chests[i])
-        end
+    for _, chest in pairs(storage_chests) do
+        table.insert(threads, function ()
+            parallelInventory(chest)
+        end)
     end
 
     parallel.waitForAll(table.unpack(threads))
@@ -464,10 +469,10 @@ local function calculateFullnessPercentage()
 
     local threads = {}
 
-    for i = 1, #storage_chests do
-        threads[i] = function ()
-            parallelCheck(storage_chests[i])
-        end
+    for _, chest in pairs(storage_chests) do
+        table.insert(threads, function ()
+            parallelCheck(chest)
+        end)
     end
 
     parallel.waitForAll(table.unpack(threads))
