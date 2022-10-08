@@ -126,25 +126,34 @@ local function pullItemsFromStorage(search_term, search_requested_count)
         do_substring_search = true
     end
 
-    for i = 1, #storage_chests do
+    local function parallelChestPull(chest_name)
+        if not do_search then
+            return
+        end
+
         -- get the current chest
-        local current_chest = peripheral.wrap(storage_chests[i])
+        local current_chest = peripheral.wrap(chest_name)
         -- get the items in the chest
         local items = current_chest.list()
-        -- loop through all the items
-        for current_slot, current_item in pairs(items) do
+
+        local do_chest_search = true
+
+        local function parallelChestPullSub(slot, item)
+            if not do_chest_search then
+                return
+            end
 
             local item_matches_search = false
 
             -- if the search term starts with a ! then we are looking for non - exact match
             if do_substring_search then
                 -- if the search term matches then mark it as a match
-                if string.find(current_item.name, search_term) then
+                if string.find(item.name, search_term) then
                     item_matches_search = true
                 end
             else
                 -- if the search term matches then mark it as a match
-                if string.find(current_item.name, "^.+:" .. search_term .. "$") then
+                if string.find(item.name, "^.+:" .. search_term .. "$") then
                     item_matches_search = true
                 end
             end
@@ -154,26 +163,43 @@ local function pullItemsFromStorage(search_term, search_requested_count)
                 -- check how many items we need to move
                 if search_requested_count == "all" or search_requested_count == nil then
                     -- if we want to move all items, then we don't need to check how many items we need to move
-                    moved_items = moved_items + current_chest.pushItems(_peripherals.chest_output.name, current_slot)
+                    moved_items = moved_items + current_chest.pushItems(_peripherals.chest_output.name, slot)
                 else
                     -- check how many items we need to move
                     local items_to_move = search_requested_count - moved_items
 
                     if items_to_move > 0 then
                         -- move the item to the main chest
-                        moved_items = moved_items + current_chest.pushItems(_peripherals.chest_output.name, current_slot, items_to_move)
+                        moved_items = moved_items + current_chest.pushItems(_peripherals.chest_output.name, slot, items_to_move)
                     else
                         do_search = false
-                        break
+                        do_chest_search = false
                     end
                 end
             end
         end
 
-        if not do_search then
-            break
+        local threads = {}
+
+        -- loop through all the items
+        for current_slot, current_item in pairs(items) do
+            threads[current_slot] = function ()
+                parallelChestPullSub(current_slot, current_item)
+            end
+        end
+
+        parallel.waitForAll(table.unpack(threads))
+    end
+
+    local threads = {}
+
+    for i = 1, #storage_chests do
+        threads[i] = function ()
+            parallelChestPull(storage_chests[i])
         end
     end
+
+    parallel.waitForAll(table.unpack(threads))
 
     logger.info("Pulled " .. moved_items .. " '".. search_term .."'")
     return moved_items
@@ -181,13 +207,18 @@ end
 
 local function pushItemsToStorage(slot_to_push, item_count)
     local moved_items = 0
+    local do_push_check = true
 
-    for i = 1, #storage_chests do
+    local function parallelPush(chest)
+        if not do_push_check then
+            return
+        end
+
         -- if the item is in the no push list, skip it
 
         local do_push = true
         for j = 1, #no_push_list do
-            if storage_chests[i] == no_push_list[j] then
+            if chest == no_push_list[j] then
                 do_push = false
                 break
             end
@@ -195,15 +226,25 @@ local function pushItemsToStorage(slot_to_push, item_count)
 
         if do_push then
             -- try to push the items from the main chest to the current chest
-            local items_pushed = _peripherals.chest_input.object.pushItems(storage_chests[i], slot_to_push)
+            local items_pushed = _peripherals.chest_input.object.pushItems(chest, slot_to_push)
             
             moved_items = moved_items + items_pushed
     
             if moved_items >= item_count then
-                break
+                do_push_check = false
             end
+        end    
+    end
+
+    local threads = {}
+
+    for i = 1, #storage_chests do
+        threads[i] = function ()
+            parallelPush(storage_chests[i])
         end
     end
+
+    parallel.waitForAll(table.unpack(threads))
 
     logger.debug("...pushed " .. moved_items .. " items")
     return moved_items
@@ -212,10 +253,21 @@ end
 local function pushAllToStorage()
     local transferred = 0
     local attempted_transfer = true
-    for current_slot, current_item in pairs(_peripherals.chest_input.object.list()) do
-        transferred = transferred + pushItemsToStorage(current_slot, current_item.count)
+
+    local function parallelPush(slot, item)
+        transferred = transferred + pushItemsToStorage(slot, item.count)
         attempted_transfer = true
     end
+
+    local threads = {}
+
+    for current_slot, current_item in pairs(_peripherals.chest_input.object.list()) do
+        threads[current_slot] = function ()
+            parallelPush(current_slot, current_item)
+        end
+    end
+
+    parallel.waitForAll(table.unpack(threads))
 
     if attempted_transfer then
         -- print()
@@ -238,9 +290,9 @@ local function getStorageItemCount(search_term)
         do_substring_search = true
     end
 
-    for i = 1, #storage_chests do
+    local function pararllelItemCount(chest_name)
         -- get the current chest
-        local current_chest = peripheral.wrap(storage_chests[i])
+        local current_chest = peripheral.wrap(chest_name)
         -- get the items in the chest
         local items = current_chest.list()
         -- loop through all the items
@@ -273,6 +325,16 @@ local function getStorageItemCount(search_term)
         end
     end
 
+    local threads = {}
+
+    for i = 1, #storage_chests do
+        threads[i] = function ()
+            pararllelItemCount(storage_chests[i])
+        end
+    end
+
+    parallel.waitForAll(table.unpack(threads))
+
     -- pretty.print(pretty.pretty(item_table))
     logger.info("Found " .. item_count .. " items matching the search '" .. search_term .. "'")
 
@@ -285,9 +347,9 @@ local function getInventory()
     local occupied_slots = 0
     local total_slots = 0
 
-    for i = 1, #storage_chests do
+    local function parallelInventory(chest_name)
         -- get the current chest
-        local current_chest = peripheral.wrap(storage_chests[i])
+        local current_chest = peripheral.wrap(chest_name)
         -- get the items in the chest
         local items = current_chest.list()
         occupied_slots = occupied_slots + #items
@@ -303,6 +365,16 @@ local function getInventory()
             end
         end
     end
+
+    local threads = {}
+
+    for i = 1, #storage_chests do
+        threads[i] = function ()
+            parallelInventory(storage_chests[i])
+        end
+    end
+
+    parallel.waitForAll(table.unpack(threads))
 
     local fullness = math.floor((occupied_slots / total_slots) * 100)
 
@@ -379,9 +451,9 @@ local function calculateFullnessPercentage()
     local total_slots = 0
     local total_items = 0
 
-    for i = 1, #storage_chests do
+    local function parallelCheck(chest_name)
         -- get the current chest
-        local current_chest = peripheral.wrap(storage_chests[i])
+        local current_chest = peripheral.wrap(chest_name)
         -- get the items in the chest
         local items = current_chest.list()
         local slots = current_chest.size()
@@ -389,6 +461,16 @@ local function calculateFullnessPercentage()
         total_slots = total_slots + slots
         total_items = total_items + #items
     end
+
+    local threads = {}
+
+    for i = 1, #storage_chests do
+        threads[i] = function ()
+            parallelCheck(storage_chests[i])
+        end
+    end
+
+    parallel.waitForAll(table.unpack(threads))
 
     return math.floor((total_items / total_slots) * 100)
 end
