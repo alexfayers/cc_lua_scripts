@@ -159,7 +159,6 @@ local itemList = mainFrame
             amountInput:setValue(items[item.text])
 
             fullnessThread:start(function()
-                local fullness = storage.calculateFullnessPercentage()
                 fullnessLabel:setText("Fullness: " .. fullness .. "%")
 
                 fullnessBar:setProgress(fullness)
