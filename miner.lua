@@ -1,5 +1,10 @@
 -- Strip mine bot
 
+local update = require("afscript.meta.update")
+update.update_file("teller")  -- update/require the teller script
+local teller = require("teller")  -- require the teller script
+teller.initialize()
+
 -- imports
 
 local logging = require("afscript.core.logging")
@@ -51,6 +56,7 @@ local _notable_ores = {
 }
 
 
+local computer_id = os.getComputerID()
 -- blocks to leave between each branch
 local branch_spacing = 3
 -- number of blocks to mine in each branch
@@ -67,11 +73,34 @@ local torch_light = 12
 local current_light_level = 0
 
 
-local function _mineNotify(title, message)
-    notify.join(
-        "CC: Miner #" .. os.getComputerID() .. " " .. title,
-        message
-    )
+-- local function _mineNotify(title, message)
+--     notify.join(
+--         "CC: Miner #" .. os.getComputerID() .. " " .. title,
+--         message
+--     )
+-- end
+
+local function _privateNotify(_, message)
+    teller.tell("Ariakis921", "#" .. computer_id .. " - [" .. os.date("%H:%M:%S") .. "]: " .. message)
+end
+
+local _mineNotify = _privateNotify
+
+
+local function _waypointShare(name, position)
+    -- xaero-waypoint:The Tree Of Ponder:T:2138:162:-3221:1:false:0:Internal-overworld-waypoints
+    local payload = "xaero-waypoint:"
+    payload = payload .. name .. ":" -- name of the waypoint
+    payload = payload .. "X:"  -- letter for waypoint in HUD (X marks the spot!)
+    payload = payload .. position.x .. ":"  -- x coord
+    payload = payload .. position.y .. ":"  -- y coord
+    payload = payload .. position.z .. ":"  -- z coord
+    payload = payload .. "6:"  -- color of the waypoint
+    payload = payload .. "false:"  -- visible
+    payload = payload .. "0:"  -- color
+    payload = payload .. "Internal-overworld-waypoints"  -- group
+
+    teller.tell("Ariakis921", payload)  -- TODO: make this configurable
 end
 
 
@@ -167,6 +196,8 @@ local function _mineIfOre(inspect_action, mine_action, do_mine)
         for _, notable_ore in ipairs(_notable_ores) do
             if string.find(block.name, notable_ore) then
                 _mineNotify("Found " .. notable_ore, "Found " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
+                sleep(0.1)
+                _waypointShare(notable_ore, movement.current_position)
             end
             logger.info("Found " .. block.name .. " at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
         end
@@ -428,10 +459,10 @@ local function mine()
             if branch_has_ore then
                 logger.info("Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z)
 
-                _mineNotify(
-                    "Found ore",
-                    "Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z
-                )
+                -- _mineNotify(
+                --     "Found ore",
+                --     "Found ore in the branch at " .. movement.current_position.x .. ", " .. movement.current_position.y .. ", " .. movement.current_position.z
+                -- )
             else
                 logger.info("No ore found in this branch")
 
