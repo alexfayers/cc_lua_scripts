@@ -1,10 +1,4 @@
--- update requirements
-local update = require("afscript.meta.update")
-update.update_library({
-    submodules = {
-        "storage"
-    }
-})
+error("Depricated. Use storage.lua instead.")
 
 local storage = require("afscript.storage.storage")
 

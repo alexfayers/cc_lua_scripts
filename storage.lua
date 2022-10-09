@@ -1,11 +1,3 @@
--- download storage if it's not downloaded already
-local update = require("afscript.meta.update")
-update.update_library({
-    submodules = {
-        "storage"
-    }
-})
-
 -- load storage
 local storage = require("afscript.storage.storage")
 local remote = require("afscript.core.remote")
@@ -15,9 +7,11 @@ local gui_config = require("afscript.gui.config")
 local gui = require("afscript.gui.gui")
 local basalt = require("afscript.gui.basalt")
 local helper = require("afscript.core.helper")
+local pretty = require("cc.pretty")
 
 local screen_width, screen_height = term.getSize()
 local items = { }
+local _storage_map = storage.createStorageMap()
 local fullness = 0
 
 -- remote control stuff
@@ -52,14 +46,12 @@ local mainFrame = basalt.createFrame("mainFrame")
 local function populateItemList(filter)
     local itemList = mainFrame:getObject("itemList")
     itemList:clear()
-    
-    for item_name, item_count in helper.spairs(items) do
-        if filter ~= "" then
-            if string.find(item_name, filter) then
-                itemList:addItem(item_name, nil, nil, item_count)
-            end
+
+    for _, item in pairs(items) do
+        if filter ~= "" and string.find(item.name, filter) then
+            itemList:addItem(item.name, nil, nil, item.count)
         else
-            itemList:addItem(item_name, nil, nil, item_count)
+            itemList:addItem(item.name, nil, nil, item.count)
         end
     end
 end
@@ -127,7 +119,7 @@ local amountInput = mainFrame
 
         if item ~= nil then
             local item_name = itemList:getItem(item).text
-            local item_count = items[item_name]
+            local item_count = items[item_name].count
 
             if amount > item_count then
                 self:setValue(item_count)
@@ -156,7 +148,7 @@ local itemList = mainFrame
 
             local item = self:getItem(item_index)
 
-            amountInput:setValue(items[item.text])
+            amountInput:setValue(items[item.text].count)
 
             fullnessThread:start(function()
                 fullnessLabel:setText("Fullness: " .. fullness .. "%")
@@ -169,7 +161,7 @@ local itemList = mainFrame
                 else
                     fullnessBar:setProgressBar(gui_config.colors.bar.fg_high)
                 end
-                sleep(0.1)
+                -- sleep(0.1)
             end)
         else
             pullButton:setBackground(gui_config.colors.button.bg_disabled)
@@ -187,12 +179,14 @@ local function sendRemoteUpdate()
         })
 
         remote.broadcast(PROTOCOL, packet)
-        sleep(0.1)
+        -- sleep(0.1)
     end)
 end
     
 local function updateItems()
-    items, fullness = storage.getInventoryClean()
+    _storage_map = storage.createStorageMap()
+    items = storage.getCleanStorageMap(_storage_map)
+    fullness = storage.calculateFullness(_storage_map)
     populateItemList(searchBox:getValue())
     sendRemoteUpdate()
 end
@@ -211,13 +205,17 @@ local function pullAction()
     noticeLabel:setText("Pulling " .. amount .. " " .. search)
 
     storageThread:start(function()
-        storage.pullFromStorage(search, tonumber(amount))
-        noticeLabel:setText("Pulled " .. amount .. " " .. search)
+        local actual_amount = 0
+        
+        _storage_map = storage.createStorageMap()
+
+        _storage_map, actual_amount = storage.pullFromStorage(_storage_map, search, tonumber(amount))
+        noticeLabel:setText("Pulled " .. actual_amount .. " " .. search)
         readThread:start(function()
             updateItems()
-            sleep(0.1)
+            -- sleep(0.1)
         end)
-        sleep(0.1)
+        -- sleep(0.1)
     end)
 end
 
@@ -230,13 +228,14 @@ local function pushAction()
     noticeLabel:setText("Pushing all items")
 
     storageThread:start(function()
-        storage.pushAllToStorage()
+        _storage_map = storage.createStorageMap()
+        _storage_map = storage.pushAllToStorage(_storage_map)
         noticeLabel:setText("Pushed all items")
         readThread:start(function()
             updateItems()
-            sleep(0.1)
+            -- sleep(0.1)
         end)
-        sleep(0.1)
+        -- sleep(0.1)
     end)
 end
 
@@ -284,21 +283,24 @@ local function _readMessages()
                 -- basalt.debug("Received push packet")
                 pushAction()
             elseif packet.type == "pull" then
-                -- basalt.debug("Received pull packet")
+                basalt.debug("Received pull packet")
                 storageThread:start(function()
-                    if storage.pullFromStorage(packet.data.search, tonumber(packet.data.count)) then
+                    local pulled_amount = 0
+
+                    _storage_map = storage.createStorageMap()
+
+                    _storage_map, pulled_amount = storage.pullFromStorage(_storage_map, packet.data.search, tonumber(packet.data.count))
+                    if pulled_amount then
                         noticeLabel:setText("Pulled " .. packet.data.count .. " " .. packet.data.search)
                         readThread:start(function()
                             updateItems()
                             populateItemList(searchBox:getValue())
                             sendRemoteUpdate()
-                            sleep(0.1)
                         end)
                     else
                         -- how can they even see this??? hax!!
                         noticeLabel:setText("Not enough " .. packet.data.search)
                     end
-                    sleep(0.1)
                 end)
             elseif packet.type == "update" then
                 -- basalt.debug("Received update packet")

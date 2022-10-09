@@ -96,13 +96,11 @@ local function populateItemList(filter)
     local itemList = mainFrame:getObject("itemList")
     itemList:clear()
     
-    for item_name, item_count in helper.spairs(items) do
-        if filter ~= "" then
-            if string.find(item_name, filter) then
-                itemList:addItem(item_name, nil, nil, item_count)
-            end
+    for _, item in pairs(items) do
+        if filter ~= "" and string.find(item.name, filter) then
+            itemList:addItem(item.name, nil, nil, item.count)
         else
-            itemList:addItem(item_name, nil, nil, item_count)
+            itemList:addItem(item.name, nil, nil, item.count)
         end
     end
 end
@@ -166,7 +164,7 @@ local amountInput = mainFrame
 
         if item ~= nil then
             local item_name = itemList:getItem(item).text
-            local item_count = items[item_name]
+            local item_count = items[item_name].count
 
             if amount > item_count then
                 self:setValue(item_count)
@@ -195,7 +193,7 @@ local itemList = mainFrame
 
             local item = self:getItem(item_index)
 
-            amountInput:setValue(items[item.text])
+            amountInput:setValue(items[item.text].count)
 
             -- fullnessLabel:setText("Fullness: " .. fullness .. "%")
 
