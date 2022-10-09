@@ -681,13 +681,6 @@ end
 return {
     pushAllToStorage = _pushAllToStorage,
     pullFromStorage = _pullSearchFromStorage,
-    fullInventoryCheck = fullInventoryCheck,
-    saveInventoryToCompletionFile = saveInventoryToCompletionFile,
-    getInventory = getInventory,
-    getInventoryFromFile = getInventoryFromFile,
-    getStorageItemCount = getStorageItemCount,
-    calculateFullnessPercentage = calculateFullnessPercentage,
-    getInventoryClean = getInventoryClean,
     runTests = runTests,
     createStorageMap = createStorageMap,
     getCleanStorageMap = getCleanStorageMap,
