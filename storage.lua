@@ -47,7 +47,7 @@ local function populateItemList(filter)
     local itemList = mainFrame:getObject("itemList")
     itemList:clear()
 
-    for _, item in pairs(items) do
+    for _, item in helper.spairs(items) do
         if filter ~= "" then
             if string.find(item.name, filter) then
                 itemList:addItem(item.name, nil, nil, item.count)
