@@ -487,6 +487,12 @@ local function pushItems(storage_map, inventory)
     local pushed_items = 0
 
     tableMap(storage_map, function (chest)
+        for _, no_push_chest in pairs(no_push_list) do
+            if chest.name == no_push_chest then
+                return
+            end
+        end
+
         tableMap(to_push_map, function (item)
             -- these need to be on separate lines to prevent weird behaviour. Think it's a bug in the compiler.
             local res = wrapped_input.pushItems(chest.name, item.slot, item.count)
