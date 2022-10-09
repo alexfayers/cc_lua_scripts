@@ -48,8 +48,10 @@ local function populateItemList(filter)
     itemList:clear()
 
     for _, item in pairs(items) do
-        if filter ~= "" and string.find(item.name, filter) then
-            itemList:addItem(item.name, nil, nil, item.count)
+        if filter ~= "" then
+            if string.find(item.name, filter) then
+                itemList:addItem(item.name, nil, nil, item.count)
+            end
         else
             itemList:addItem(item.name, nil, nil, item.count)
         end
