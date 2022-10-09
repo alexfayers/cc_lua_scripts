@@ -7,6 +7,7 @@ local logger = logging.new("afscript.storage", logging.LEVEL.ERROR)
 
 -- local INVENTORY_FILE = ".storage_completion.txt"
 local NO_PUSH_FILE = ".storage_no_push.txt"
+local MAX_THREADS = 8
 
 -- define setttings
 
@@ -140,6 +141,10 @@ local function tableMap(t, f)
         table.insert(threads, function()
             results[k] = f(v)
         end)
+        if #threads == MAX_THREADS then
+            parallel.waitForAll(table.unpack(threads))
+            threads = {}
+        end
     end
     parallel.waitForAll(table.unpack(threads))
     return results
@@ -160,6 +165,10 @@ local function tableFilter(t, f)
                 results[k] = v
             end
         end)
+        if #threads == MAX_THREADS then
+            parallel.waitForAll(table.unpack(threads))
+            threads = {}
+        end
     end
     parallel.waitForAll(table.unpack(threads))
     return results
